@@ -1,0 +1,61 @@
+import axios from 'axios';
+
+// API Configuration
+// In production (Vercel), VITE_API_URL should be set to Railway backend URL
+// Example: https://your-backend.railway.app
+const getApiBaseUrl = () => {
+    const envUrl = import.meta.env.VITE_API_URL;
+    if (envUrl) {
+        // If VITE_API_URL is set, append /api/v1 if not already present
+        return envUrl.endsWith('/api/v1') ? envUrl : `${envUrl}/api/v1`;
+    }
+    // Default to localhost for development
+    return 'http://127.0.0.1:8000/api/v1';
+};
+
+const api = axios.create({
+    baseURL: getApiBaseUrl(),
+    headers: {
+        'Content-Type': 'application/json',
+    },
+});
+
+// Add token to requests if available
+api.interceptors.request.use((config) => {
+    const token = localStorage.getItem('access_token');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
+
+// Auth API
+export const authAPI = {
+    login: (email, password) => {
+        const params = new URLSearchParams();
+        params.append('username', email);
+        params.append('password', password);
+        return api.post('/login/access-token', params, {
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        });
+    },
+    signup: (data) => api.post('/signup', data),
+    getCurrentUser: () => api.get('/users/me'),
+};
+
+// Resume API
+export const resumeAPI = {
+    upload: (formData) => api.post('/resumes/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+    getAll: () => api.get('/resumes/'),
+    getById: (id) => api.get(`/resumes/${id}`),
+};
+
+// Job API
+export const jobAPI = {
+    matchJob: (resumeId, jobDescription) => api.post(`/jobs/match/${resumeId}`, jobDescription),
+    getRecommendations: (resumeId) => api.get(`/jobs/recommendations/${resumeId}`),
+};
+
+export default api;

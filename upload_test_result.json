@@ -1,0 +1,35 @@
+{
+  "title": "Test Resume - Data Analyst",
+  "id": 5,
+  "file_path": "uploads/2_sample_resume.txt",
+  "file_type": "txt",
+  "ats_score": 65.8,
+  "parsed_data": {
+    "raw_text": "JOHN DOE Email: john.doe@email.com | Phone: (555) 123-4567 LinkedIn: linkedin.com/in/johndoe PROFESSIONAL SUMMARY Experienced Data Analyst with 5 years of expertise in Python, SQL, and data visualization. Proven track record of delivering actionable insights that drive business decisions. EXPERIENCE Senior Data Analyst | Tech Corp | 2021 - Present - Analyzed large datasets using Python and SQL to identify trends and patterns - Created interactive dashboards in Tableau for executive leadership - Improved data processing efficiency by 40% through automation - Led a team of 3 junior analysts on key projects Data Analyst | StartUp Inc | 2019 - 2021 - Performed statistical analysis on customer behavior data - Developed predictive models using machine learning algorithms - Collaborated with product team to optimize user experience - Reduced data processing time by 25% EDUCATION Bachelor of Science in Computer Science University of Technology | 2015 - 2019 GPA: 3.8/4.0 SKILLS - Programming: Python, SQL, R - Tools: Tableau, Power BI, Excel, Jupyter - Libraries: Pandas, NumPy, Scikit-learn, Matplotlib - Databases: MySQL, PostgreSQL, MongoDB - Other: Machine Learning, Statistical Analysis, Data Visualization"
+  },
+  "score_breakdown": {
+    "keywords_match": 62.96,
+    "grammar_score": 85.0,
+    "relevance_score": 38.06,
+    "structure_score": 80.0
+  },
+  "missing_keywords": [
+    "stakeholder",
+    "provide",
+    "strong",
+    "skill",
+    "work",
+    "tool",
+    "like",
+    "plus",
+    "able",
+    "look"
+  ],
+  "ai_rewritten_content": null,
+  "predicted_role": "Analyzing...",
+  "created_at": "2026-02-11T17:16:10",
+  "owner_id": 2,
+  "grammar_errors": null,
+  "ai_feedback": null,
+  "matching_jobs": null
+}

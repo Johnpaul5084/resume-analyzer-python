@@ -1,0 +1,25 @@
+(trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "C:\Users\JOHN PAUL\AppData\Local\Programs\Python\Python313\Lib\site-packages\passlib\handlers\bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+(trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "C:\Users\JOHN PAUL\AppData\Local\Programs\Python\Python313\Lib\site-packages\passlib\handlers\bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+Testing get_password_hash...
+Input: pass123
+DEBUG: INSIDE get_password_hash - input length: 7
+DEBUG: Truncated password: pass123
+DEBUG: ERROR in get_password_hash: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
+EXCEPTION: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
+
+Testing long password...
+Input length: 100
+DEBUG: INSIDE get_password_hash - input length: 100
+DEBUG: Truncated password: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+DEBUG: ERROR in get_password_hash: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
+EXCEPTION LONG: password cannot be longer than 72 bytes, truncate manually if necessary (e.g. my_password[:72])
