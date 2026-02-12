@@ -1,0 +1,45 @@
+fastapi==0.109.2
+uvicorn==0.27.1
+sqlalchemy==2.0.27
+alembic==1.13.1
+psycopg2-binary==2.9.9
+pydantic==2.6.1
+pydantic-settings==2.1.0
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.9
+requests==2.31.0
+pdfplumber==0.10.3
+python-docx==1.1.0
+spacy==3.7.2
+language-tool-python==2.7.1
+google-generativeai==0.3.2  # For AI rewriting via Gemini if needed, or Hugging Face
+transformers==4.37.2
+torch==2.1.2 --index-url https://download.pytorch.org/whl/cpu
+tika==2.6.0 # Python Tika wrapper
+python-dotenv==1.0.1
+email-validator==2.1.0.post1
+openai==1.12.0 # Optional for AI rewriting
+regex==2023.12.25
+pandas==2.2.0
+matplotlib==3.8.2
+seaborn==0.13.2
+jinja2==3.1.3
+xhtml2pdf==0.2.14 # PDF generation
+PyMuPDF==1.25.3
+numpy==1.26.4
+scikit-learn==1.4.1.post1
+textblob==0.18.0.post0
+python-levenshtein==0.23.0
+beautifulsoup4==4.12.3
+requests-toolbelt==1.0.0
+pytest==8.0.0
+pytest-cov==4.1.0
+httpx==0.26.0
+python-magic-bin==0.4.14
+aiofiles==23.2.1
+asyncpg==0.29.0
+greenlet==3.0.3
+argon2-cffi==23.1.0
+gunicorn==21.2.0
+uvloop==0.19.0; sys_platform != 'win32'

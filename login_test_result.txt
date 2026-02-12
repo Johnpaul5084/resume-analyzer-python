@@ -1,0 +1,2 @@
+Status Code: 200
+Response: {"access_token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzA4MjM1NDMsInN1YiI6IjIifQ.pSLPI-PnW_NFrOWOXIXV_Yp5SHVl2eOkj-ev46-LeiE","token_type":"bearer"}
