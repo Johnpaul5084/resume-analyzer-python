@@ -1,5 +1,12 @@
-from transformers import pipeline
-import torch
+try:
+    from transformers import pipeline
+    import torch
+    ML_AVAILABLE = True
+except ImportError:
+    ML_AVAILABLE = False
+    pipeline = None
+    torch = None
+
 import logging
 
 logger = logging.getLogger(__name__)
@@ -9,9 +16,13 @@ class JobPredictionService:
 
     @classmethod
     def get_classifier(cls):
+        if not ML_AVAILABLE:
+            logger.warning("ML libraries (transformers, torch) not installed. Job prediction unavailable.")
+            return None
+
         if cls._classifier is None:
             try:
-                # Use a smaller, faster model for CPU inference and deployment (much lighter than facebook/bart-large-mnli)
+                # Use a smaller, faster model for CPU inference and deployment
                 cls._classifier = pipeline("zero-shot-classification", 
                                          model="valhalla/distilbart-mnli-12-1", 
                                          device=-1) # -1 for CPU

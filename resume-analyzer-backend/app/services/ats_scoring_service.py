@@ -1,19 +1,51 @@
-import spacy
-import language_tool_python
+try:
+    import spacy
+    import language_tool_python
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.metrics.pairwise import cosine_similarity
+    NLP_AVAILABLE = True
+except ImportError:
+    NLP_AVAILABLE = False
+    spacy = None
+    language_tool_python = None
+    TfidfVectorizer = None
+    cosine_similarity = None
+
 import re
 from typing import List, Dict, Any, Tuple
 from collections import Counter
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 
+# Mock classes for fallback
+class MockToken:
+    def __init__(self, text):
+        self.text = text
+        self.lemma_ = text
+        self.is_stop = False
+        self.is_alpha = text.isalpha()
+        self.label_ = "ORG" # Dummy label
+
+class MockDoc:
+    def __init__(self, text):
+        self.text = text
+        self.tokens = [MockToken(t) for t in text.split()]
+        self.ents = []
+    
+    def __iter__(self):
+        return iter(self.tokens)
+
 # Load NLP model
-try:
-    nlp = spacy.load("en_core_web_sm")
-except:
-    import os
-    os.system("python -m spacy download en_core_web_sm")
-    nlp = spacy.load("en_core_web_sm")
+nlp = None
+if NLP_AVAILABLE:
+    try:
+        nlp = spacy.load("en_core_web_sm")
+    except:
+        try:
+            import os
+            os.system("python -m spacy download en_core_web_sm")
+            nlp = spacy.load("en_core_web_sm")
+        except:
+            NLP_AVAILABLE = False # Fallback if download fails
 
 # Lazy-load grammar tool to avoid blocking on startup
 _grammar_tool = None
@@ -21,8 +53,11 @@ _grammar_tool = None
 def get_grammar_tool():
     """Lazy-load grammar tool only when needed"""
     global _grammar_tool
-    if _grammar_tool is None:
-        _grammar_tool = language_tool_python.LanguageTool('en-US')
+    if _grammar_tool is None and language_tool_python:
+        try:
+            _grammar_tool = language_tool_python.LanguageTool('en-US')
+        except:
+            pass
     return _grammar_tool
 
 class ATSScoringService:
