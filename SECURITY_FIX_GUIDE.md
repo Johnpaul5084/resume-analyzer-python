@@ -2,7 +2,7 @@
 
 ## ⚠️ EXPOSED API KEY DETECTED
 
-**GEMINI_API_KEY:** `GEMINI_KEY_REVOKED`
+**GEMINI_API_KEY:** `[REVOKED - KEY REMOVED FROM REPO]`
 
 **Status:** The `.env` file is already in `.gitignore` ✓ but the key exists in Git history!
 
@@ -16,7 +16,7 @@ This is the MOST IMPORTANT step. Do this immediately:
 
 1. **Go to Google Cloud Console**: https://console.cloud.google.com/
 2. Navigate to: **APIs & Services → Credentials**
-3. Find the API key: `GEMINI_KEY_REVOKED`
+3. Find the API key: `[KEY REVOKED]`
 4. **Click on it** → Click **"Delete key"** button
 5. OR click **"Regenerate key"** to get a new key
 
