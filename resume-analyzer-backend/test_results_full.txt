@@ -1,0 +1,15 @@
+[PASS] GET /: HTTP 200
+[PASS] POST /signup: HTTP 201 {"email":"t1771518594@test.com","full_name":"Test User","id":8,"is_active":true,
+[PASS] POST /login: Token OK
+[PASS] GET /users/me: HTTP 200
+[PASS] POST /resumes/upload: ID:13 ATS:52.88
+[PASS] GET /resumes/: HTTP 200 Count:1
+[PASS] GET /resumes/ID: HTTP 200
+[PASS] POST /resumes/rewrite: HTTP 200 OK
+[PASS] POST /resumes/predict-job: HTTP 200 OK
+[PASS] POST /resumes/validate-fit: HTTP 200 OK
+[PASS] POST /career-guru/chat: HTTP 200 Got reply
+[PASS] POST /career-guru/roadmap: HTTP 200 Got roadmap
+[PASS] GET /jobs/recommendations/ID: HTTP 200 OK
+
+PASSED:13 FAILED:0 SKIPPED:0 Score:100%

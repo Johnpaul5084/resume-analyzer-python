@@ -4,6 +4,7 @@ import docx
 from fastapi import UploadFile
 import io
 import re
+from app.services.ocr_service import OCRService
 
 logger = logging.getLogger(__name__)
 
@@ -18,16 +19,8 @@ class ParserService:
         
         try:
             if file_type == 'pdf':
-                try:
-                    with pdfplumber.open(io.BytesIO(content)) as pdf:
-                        for page in pdf.pages:
-                            text = page.extract_text()
-                            if text:
-                                extracted_text += text
-                except Exception as e:
-                    logger.error(f"Error parsing PDF with pdfplumber: {e}")
-                    # Fallback or re-raise
-                    raise ValueError("Failed to parse PDF file.")
+                # Use OCR Service which handles both text-based and scanned PDFs
+                extracted_text = await OCRService.extract_text_from_bytes(content, 'pdf')
                     
             elif file_type in ['docx', 'doc']:
                 try:
@@ -37,12 +30,19 @@ class ParserService:
                     logger.error(f"Error parsing DOCX: {e}")
                     raise ValueError("Failed to parse DOCX file.")
             
+            elif file_type in ['jpg', 'jpeg', 'png']:
+                # New: Support for image-based resumes
+                extracted_text = await OCRService.extract_text_from_bytes(content, file_type)
+
             elif file_type == 'txt':
                 extracted_text = content.decode('utf-8')
                 
             else:
                 raise ValueError(f"Unsupported file type: {file_type}")
-                
+            
+            if not extracted_text.strip():
+                logger.warning(f"No text extracted from {file_type} file.")
+
             # Basic cleanup
             extracted_text = re.sub(r'\s+', ' ', extracted_text).strip()
             return extracted_text

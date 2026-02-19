@@ -1,0 +1,5 @@
+John Phoenix - Python Dev
+Email:john@ex.com
+SKILLS:Python,FastAPI,SQL
+EXP:3yrs TechCorp
+EDU:BTech CS

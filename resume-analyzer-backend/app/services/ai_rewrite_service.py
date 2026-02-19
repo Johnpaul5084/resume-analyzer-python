@@ -1,12 +1,24 @@
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from app.core.config import settings
 from typing import Optional, Dict, Any
 import json
 import re
 
-# Configure Gemini if API key is present
+# Initialize Gemini client
+_client = None
 if settings.GEMINI_API_KEY:
-    genai.configure(api_key=settings.GEMINI_API_KEY)
+    _client = genai.Client(api_key=settings.GEMINI_API_KEY)
+
+def _generate(prompt: str) -> str:
+    """Helper: call Gemini with new SDK"""
+    if not _client:
+        raise RuntimeError("Gemini key not configured")
+    response = _client.models.generate_content(
+        model="gemini-2.0-flash",
+        contents=prompt
+    )
+    return response.text
 
 class AIRewriteService:
     
@@ -59,9 +71,8 @@ class AIRewriteService:
             """
         
         try:
-            model = genai.GenerativeModel('gemini-1.5-flash')
-            response = model.generate_content(prompt)
-            cleaned_text = response.text.replace('**', '').strip() 
+            raw = _generate(prompt)
+            cleaned_text = raw.replace('**', '').strip()
             if cleaned_text.startswith('"') and cleaned_text.endswith('"'):
                 cleaned_text = cleaned_text[1:-1]
             return cleaned_text
@@ -86,11 +97,9 @@ class AIRewriteService:
         """
         
         try:
-            model = genai.GenerativeModel('gemini-1.5-flash')
-            response = model.generate_content(prompt)
-            return response.text.strip()
+            return _generate(prompt).strip()
         except Exception as e:
-            return f"Error generation summary: {str(e)}"
+            return f"Error generating summary: {str(e)}"
 
     @staticmethod
     async def validate_role_fit(resume_text: str, target_role: str) -> Dict[str, Any]:
@@ -115,15 +124,11 @@ class AIRewriteService:
         JSON Response:
         """
         try:
-            model = genai.GenerativeModel('gemini-1.5-flash')
-            response = model.generate_content(prompt)
-            text = response.text.strip()
-            # Extract JSON block
+            text = _generate(prompt).strip()
             if "```json" in text:
                 text = text.split("```json")[1].split("```")[0].strip()
             elif "```" in text:
                 text = text.split("```")[1].split("```")[0].strip()
-            
             return json.loads(text)
         except Exception as e:
             return {"error": f"Validation failed: {str(e)}", "raw_response": text if 'text' in locals() else ""}

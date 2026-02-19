@@ -33,9 +33,15 @@ class Resume(Base):
     missing_keywords = Column(JSON) 
     
     # AI Features
-    ai_rewritten_content = Column(String, nullable=True) # Full AI rewrite
+    ai_rewritten_content = Column(Text, nullable=True) # Full AI rewrite (changed back to Text)
     predicted_role = Column(String, nullable=True) # AI detected role
     
+    # Futuristic Phoenix Features
+    analysis = Column(Text, nullable=True)
+    suggestions = Column(JSON, nullable=True) 
+    key_strengths = Column(JSON, nullable=True)
+    market_readiness = Column(Float, default=85.0)
+
     owner_id = Column(Integer, ForeignKey("users.id"))
     owner = relationship("User", back_populates="resumes")
     

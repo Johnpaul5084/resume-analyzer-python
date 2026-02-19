@@ -60,8 +60,13 @@ class Settings(BaseSettings):
     # REAL-TIME JOBS API
     SERPAPI_API_KEY: Optional[str] = os.getenv("SERPAPI_API_KEY")
 
+    # OCR SETTINGS
+    SARVAM_API_KEY: Optional[str] = os.getenv("SARVAM_API_KEY")
+    TESSERACT_PATH: str = os.getenv("TESSERACT_PATH", r"C:\Program Files\Tesseract-OCR\tesseract.exe")
+
     class Config:
         case_sensitive = True
         env_file = ".env"
+        extra = "allow"
 
 settings = Settings()

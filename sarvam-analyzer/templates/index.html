@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Resume Analyzer | Sarvam AI Powered</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>AI Resume <span>Analyzer</span></h1>
+            <p>Optimize your career with Sarvam AI Vision & Smart ATS Scoring</p>
+        </header>
+
+        <main>
+            <section class="upload-section">
+                <div class="card glass">
+                    <h3>Step 1: Upload Resume</h3>
+                    <p class="subtitle">Supports PDF, Scanned PDF, JPG, PNG</p>
+                    <label for="resume-upload" class="drop-zone" id="drop-zone">
+                        <span class="icon">📄</span>
+                        <span class="text">Click or drag & drop file</span>
+                        <input type="file" id="resume-upload" accept=".pdf,.png,.jpg,.jpeg" hidden>
+                    </label>
+                    <div id="file-name" class="file-name"></div>
+                </div>
+
+                <div class="card glass">
+                    <h3>Step 2: Job Description</h3>
+                    <textarea id="job-description"
+                        placeholder="Paste the job description here to see your match score..."></textarea>
+                </div>
+
+                <button id="analyze-btn" class="primary-btn">Analyze Resume</button>
+            </section>
+
+            <section id="results-section" class="results-section hidden">
+                <div class="score-card glass">
+                    <div class="circular-progress">
+                        <span id="score-val">0%</span>
+                    </div>
+                    <h4>ATS Match Score</h4>
+                </div>
+
+                <div class="details-grid">
+                    <div class="card glass">
+                        <h3>Extracted Info</h3>
+                        <p><strong>Name:</strong> <span id="res-name">-</span></p>
+                        <p><strong>Email:</strong> <span id="res-email">-</span></p>
+                        <p><strong>Phone:</strong> <span id="res-phone">-</span></p>
+                    </div>
+                    <div class="card glass">
+                        <h3>Matched Skills</h3>
+                        <div id="matched-skills" class="tag-container"></div>
+                    </div>
+                    <div class="card glass">
+                        <h3>Missing Skills</h3>
+                        <div id="missing-skills" class="tag-container red"></div>
+                    </div>
+                </div>
+            </section>
+
+            <div id="loader" class="loader-container hidden">
+                <div class="spinner"></div>
+                <p>Sarvam AI is analyzing your document...</p>
+            </div>
+        </main>
+    </div>
+    <script src="/static/js/script.js"></script>
+</body>
+
+</html>

@@ -58,4 +58,10 @@ export const jobAPI = {
     getRecommendations: (resumeId) => api.get(`/jobs/recommendations/${resumeId}`),
 };
 
+// Career Guru API
+export const careerGuruAPI = {
+    chat: (question, resumeId = null) => api.post('/career-guru/chat', { question, resume_id: resumeId }),
+    getRoadmap: (targetRole, resumeId) => api.post('/career-guru/roadmap', { target_role: targetRole, resume_id: resumeId }),
+};
+
 export default api;

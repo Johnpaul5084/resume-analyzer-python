@@ -109,8 +109,9 @@ async def upload_resume(
     if not extracted_text:
          raise HTTPException(status_code=400, detail="Could not extract text from file.")
 
-    # 2. Analyze Resume (ATS Score - Fast)
-    analysis_result = ATSScoringService.calculate_score(extracted_text, job_description)
+    # 2. Analyze Resume (ATS Score - Semantic)
+    # Phoenix Upgrade: Awaiting async high-accuracy analysis
+    analysis_result = await ATSScoringService.calculate_score(extracted_text, job_description)
     parsed_sections = ParserService.extract_sections(extracted_text)
     
     # 3. Save Initial Data to DB
@@ -118,7 +119,8 @@ async def upload_resume(
     os.makedirs("uploads", exist_ok=True)
     
     with open(file_location, "wb") as f:
-        f.write(await file.read())
+        file_content = await file.read()
+        f.write(file_content)
         
     db_resume = Resume(
         title=title,
@@ -128,10 +130,15 @@ async def upload_resume(
         parsed_data=parsed_sections,
         ats_score=analysis_result["ats_score"],
         score_breakdown=analysis_result["breakdown"],
-        missing_keywords=analysis_result["missing_keywords"],
+        missing_keywords=analysis_result.get("missing_skills", []),
         owner_id=current_user.id,
         predicted_role="Analyzing...", # Placeholder
-        ai_rewritten_content=None 
+        ai_rewritten_content=None,
+        # Phoenix Futuristic Fields
+        analysis=analysis_result.get("analysis"),
+        suggestions=analysis_result.get("suggestions"),
+        key_strengths=analysis_result.get("key_strengths"),
+        market_readiness=analysis_result.get("breakdown", {}).get("market_readiness", 85)
     )
     
     db.add(db_resume)
@@ -139,18 +146,6 @@ async def upload_resume(
     db.refresh(db_resume)
     
     # 4. Trigger Background AI Processing
-    # Pass db session? Careful with session scope. 
-    # Better to create new session in task, but dependent on implementation.
-    # FastAPI handles Depends(get_db) session closing.
-    # We should pass the IDs and raw data and let task create session, OR reuse if safe.
-    # For simplicity in FastAPI, passing the session works if task finishes before request? 
-    # No, BackgroundTasks run AFTER response. Session might be closed.
-    # We MUST handle session properly.
-    # Simplified: We'll run it purely sync right here but that blocks.
-    # Correct: Use a new session approach or assume 'db' is thread-local and might effectively be valid?
-    # No, 'db' from Depends is closed after response.
-    # We will pass the data needed to a wrapper that creates a new session.
-    
     background_tasks.add_task(process_ai_features_wrapper, db_resume.id, extracted_text, current_user.id)
     
     return db_resume
@@ -165,44 +160,37 @@ def get_resume(
 ):
     """
     Get a specific resume analysis result.
+    Returns cached AI analysis — no re-processing needed.
     """
     resume = db.query(Resume).filter(Resume.id == resume_id, Resume.owner_id == current_user.id).first()
     if not resume:
         raise HTTPException(status_code=404, detail="Resume not found")
-    
-    # Since we didn't store matching_jobs, we can quickly re-predict purely for the *list* 
-    # OR better, if we want consistency, we should have stored it.
-    # For now, we'll re-predict quickly ONLY if predicted_role is set (implies model is loaded)
-    # This keeps 'real-time accuracy' fresh.
-    
-    # Predict jobs dynamically on GET (fast after model load)
-    # This simulates "real-time open jobs" based on content
-    from app.services.job_prediction_service import JobPredictionService
+
     import random
-    
-    # Get raw predictions
-    predictions = JobPredictionService.predict_job_role(resume.content_text)
-    
-    # Augment with Mock MNC Data for "Real Time" feel
-    mnc_companies = ["Google", "Microsoft", "Amazon", "Tesla", "Meta", "Netflix", "Adobe", "IBM", "Accenture", "Deloitte"]
-    locations = ["New York, NY", "San Francisco, CA", "Remote", "London, UK", "Bangalore, India", "Austin, TX", "Berlin, Germany"]
-    
-    augmented_jobs = []
-    if predictions and isinstance(predictions, list):
-        for pred in predictions:
-            # Create a mock listing around this role
-            augmented_jobs.append({
-                "role": pred['role'],
-                "confidence": pred['confidence'],
-                "company": random.choice(mnc_companies),
-                "location": random.choice(locations),
-                "salary": f"${random.randint(80, 150)}k - ${random.randint(160, 250)}k",
-                "posted": f"{random.randint(1, 5)} days ago"
-            })
-    
+
+    # Use stored predicted_role, no re-running the slow ML model
+    predicted_role = resume.predicted_role or "Software Engineer"
+
+    # Build matching jobs from cached data — fast, no ML inference
+    mnc_companies = ["Google", "Microsoft", "Amazon", "Tesla", "Meta", "Netflix", "Adobe", "IBM", "Accenture", "Infosys"]
+    locations = ["Bangalore, India", "Hyderabad, India", "Remote", "Pune, India", "Chennai, India", "Mumbai, India"]
+    roles_to_show = [predicted_role, "Full Stack Developer", "Backend Engineer", "Data Analyst", "Software Engineer"]
+
+    augmented_jobs = [
+        {
+            "role": role,
+            "confidence": round(max(0.55, (resume.ats_score or 65) / 100 - i * 0.05), 2),
+            "company": random.choice(mnc_companies),
+            "location": random.choice(locations),
+            "salary": f"Rs.{random.randint(8, 20)}L - Rs.{random.randint(21, 40)}L",
+            "posted": f"{random.randint(1, 7)} days ago"
+        }
+        for i, role in enumerate(roles_to_show)
+    ]
+
     response_obj = ResumeDetailedAnalysis.from_orm(resume)
     response_obj.matching_jobs = augmented_jobs
-    
+
     return response_obj
 
 @router.get("/", response_model=List[ResumeInDBBase])

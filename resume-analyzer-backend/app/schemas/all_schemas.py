@@ -52,6 +52,12 @@ class ResumeInDBBase(ResumeBase):
     predicted_role: Optional[str] = None
     created_at: datetime
     owner_id: int
+    
+    # Futuristic Upgrade Fields
+    analysis: Optional[str] = None
+    suggestions: Optional[List[str]] = []
+    key_strengths: Optional[List[str]] = []
+    market_readiness: Optional[float] = 85.0
 
     class Config:
         from_attributes = True
@@ -63,6 +69,7 @@ class ResumeDetailedAnalysis(Resume):
     grammar_errors: Optional[List[Any]] = None
     ai_feedback: Optional[str] = None
     matching_jobs: Optional[List[Dict[str, Any]]] = None # Jobs predicted for this resume
+    skills_gap_roadmap: Optional[Dict[str, Any]] = None # New roadmap feature
 
 # --- Job/Matching Schemas ---
 class JobDescriptionCreate(BaseModel):

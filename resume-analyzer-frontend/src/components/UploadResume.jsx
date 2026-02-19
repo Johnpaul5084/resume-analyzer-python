@@ -66,12 +66,12 @@ export default function UploadResume() {
                         {/* File Upload */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Resume File (PDF, DOCX, TXT)
+                                Resume File (PDF, DOCX, TXT, JPG, PNG)
                             </label>
                             <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-500 transition-colors">
                                 <input
                                     type="file"
-                                    accept=".pdf,.docx,.doc,.txt"
+                                    accept=".pdf,.docx,.doc,.txt,.jpg,.jpeg,.png"
                                     onChange={handleFileChange}
                                     className="hidden"
                                     id="file-upload"
@@ -89,7 +89,7 @@ export default function UploadResume() {
                                         <div>
                                             <Upload className="mx-auto text-gray-400 mb-3" size={48} />
                                             <p className="text-gray-600 font-medium">Click to upload or drag and drop</p>
-                                            <p className="text-sm text-gray-500 mt-1">PDF, DOCX, or TXT (Max 16MB)</p>
+                                            <p className="text-sm text-gray-500 mt-1">PDF, DOCX, TXT, or Image (Max 16MB)</p>
                                         </div>
                                     )}
                                 </label>

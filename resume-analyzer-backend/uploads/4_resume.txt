@@ -1,0 +1,6 @@
+John Phoenix - Python Developer
+Email: john@example.com
+SKILLS: Python, FastAPI, React, SQL, Docker, AWS
+EXPERIENCE: 3 years at TechCorp
+EDUCATION: B.Tech CS - VIT 2022
+PROJECTS: AI Resume Analyzer, E-Commerce App

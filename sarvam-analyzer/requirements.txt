@@ -1,0 +1,10 @@
+flask
+flask-cors
+python-dotenv
+pdfplumber
+requests
+pytesseract
+pillow
+spacy
+pydantic
+pdf2image
