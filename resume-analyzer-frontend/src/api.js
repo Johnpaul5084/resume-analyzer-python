@@ -4,8 +4,12 @@ import axios from 'axios';
 // In production (Vercel), VITE_API_URL should be set to Railway backend URL
 // Example: https://your-backend.railway.app
 const getApiBaseUrl = () => {
-    const envUrl = import.meta.env.VITE_API_URL;
+    let envUrl = import.meta.env.VITE_API_URL;
     if (envUrl) {
+        // Ensure the URL starts with https:// if it's just a domain
+        if (!envUrl.startsWith('http')) {
+            envUrl = `https://${envUrl}`;
+        }
         // If VITE_API_URL is set, append /api/v1 if not already present
         return envUrl.endsWith('/api/v1') ? envUrl : `${envUrl}/api/v1`;
     }
