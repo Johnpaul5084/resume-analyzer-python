@@ -6,14 +6,21 @@ import axios from 'axios';
 const getApiBaseUrl = () => {
     let envUrl = import.meta.env.VITE_API_URL;
     if (envUrl) {
+        // Remove trailing slash if present
+        envUrl = envUrl.replace(/\/$/, "");
+
         // Ensure the URL starts with https:// if it's just a domain
         if (!envUrl.startsWith('http')) {
             envUrl = `https://${envUrl}`;
         }
-        // If VITE_API_URL is set, append /api/v1 if not already present
-        return envUrl.endsWith('/api/v1') ? envUrl : `${envUrl}/api/v1`;
+
+        // Append /api/v1 if not already present
+        const baseUrl = envUrl.endsWith('/api/v1') ? envUrl : `${envUrl}/api/v1`;
+        console.log("Using API Base URL:", baseUrl);
+        return baseUrl;
     }
     // Default to localhost for development
+    console.log("Using local API (VITE_API_URL not set)");
     return 'http://127.0.0.1:8000/api/v1';
 };
 
