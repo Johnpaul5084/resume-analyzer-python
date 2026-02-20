@@ -70,3 +70,9 @@ class Settings(BaseSettings):
         extra = "allow"
 
 settings = Settings()
+
+# Debug: Log configuration status (Do not print the actual key!)
+if settings.GEMINI_API_KEY:
+    print("✅ GEMINI_API_KEY detected in environment.")
+else:
+    print("❌ GEMINI_API_KEY NOT detected in environment.")
