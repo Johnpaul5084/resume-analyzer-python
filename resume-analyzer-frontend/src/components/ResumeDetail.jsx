@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { resumeAPI, jobAPI } from '../api';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { FileText, TrendingUp, AlertCircle, Briefcase, ArrowLeft } from 'lucide-react';
+import CareerGuru from './CareerGuru';
 
 export default function ResumeDetail() {
     const { id } = useParams();
@@ -332,6 +333,8 @@ export default function ResumeDetail() {
                     </div>
                 )}
             </div>
+            {/* Phase 3 & 4: AI Career Guru & Roadmap */}
+            <CareerGuru resumeId={id} />
         </div>
     );
 }
