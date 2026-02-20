@@ -46,7 +46,7 @@ export default function Login() {
                 setError(err.response?.data?.detail || JSON.stringify(err.response?.data) || 'Server error occurred');
             } else if (err.request) {
                 // Request made but no response
-                setError('Cannot connect to server. Please ensure the backend is running on port 8000.');
+                setError('Cannot connect to server. Please ensure the backend is running and the API URL is correct.');
             } else {
                 // Something else happened
                 setError(err.message || 'An error occurred');
