@@ -1,134 +1,112 @@
-from google import genai
-from google.genai import types
+import google.generativeai as genai
 from app.core.config import settings
 from typing import Optional, Dict, Any
 import json
 import re
+import logging
 
-# Initialize Gemini client
-_client = None
+logger = logging.getLogger(__name__)
+
+# Configure once at module level
 if settings.GEMINI_API_KEY:
-    _client = genai.Client(api_key=settings.GEMINI_API_KEY)
-
-def _generate(prompt: str) -> str:
-    """Helper: call Gemini with new SDK"""
-    if not _client:
-        raise RuntimeError("Gemini key not configured")
-    response = _client.models.generate_content(
-        model="gemini-2.0-flash",
-        contents=prompt
-    )
-    return response.text
+    genai.configure(api_key=settings.GEMINI_API_KEY)
 
 class AIRewriteService:
     
     @staticmethod
     async def rewrite_section(text: str, section_type: str, target_role: str = "General", company_type: str = "MNC", job_description: str = None) -> str:
         """
-        Rewrites resume content using LLM. 
-        If job_description is provided, tailors the resume to that specific JD.
-        Otherwise, targets the predicted role and MNC standards.
+        Rewrites resume content using Gemini 1.5 Flash.
+        Produces professional, standard-formatted text ready for direct use.
         """
         if not settings.GEMINI_API_KEY:
-             return "AI Rewrite Service not configured (Missing API Key). Please set GEMINI_API_KEY in .env."
+             return "AI Rewrite Service not configured."
 
-        # Dynamic Prompt Construction
-        if job_description:
-            # 1. JD-Based Tailoring (Highest Priority)
-            prompt = f"""
-            Act as a hiring manager. Rewrite the following resume {section_type} section to perfectly match the provided Job Description.
-
-            Target Job Description:
-            "{job_description[:1000]}"... (truncated)
-
-            Key Requirements:
-            1. **Keyword Alignment**: Integrate keywords from the JD naturally.
-            2. **Relevance**: Highlight experience most relevant to this specific job.
-            3. **Quantifiable Impact**: Use metrics to prove capability.
-            4. **MNC Standard**: Maintain professional, active voice.
-
-            Original Resume Text:
-            "{text}"
-
-            Rewritten Tailored Version:
-            """
-        else:
-            # 2. Role-Based Tailoring (MNC Standard)
-            prompt = f"""
-            Act as a senior global recruiter for top MNC companies across industries. 
-            Rewrite the following resume {section_type} section specifically for a {target_role} position.
-
-            Key Requirements:
-            1. **MNC Standard Language**: Use professional, industry-specific terminology.
-            2. **Quantifiable Impact**: Emphasize scale and impact (e.g., "Improved X by Y%").
-            3. **Role Alignment**: Integrate skills relevant to {target_role}.
-            4. **Tone**: Professional, confident, and action-oriented.
-
-            Original Text:
-            "{text}"
-
-            Rewritten Professional Version:
-            """
-        
         try:
-            raw = _generate(prompt)
-            cleaned_text = raw.replace('**', '').strip()
-            if cleaned_text.startswith('"') and cleaned_text.endswith('"'):
-                cleaned_text = cleaned_text[1:-1]
-            return cleaned_text
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            
+            # Refined prompt for direct professional text
+            if job_description:
+                prompt = f"""
+                Act as a specialized MNC recruiter. Rewrite the following resume content to perfectly match this Job Description.
+                
+                JOB DESCRIPTION:
+                {job_description[:1500]}
+                
+                RESUME CONTENT:
+                {text[:4000]}
+                
+                REQUIREMENTS:
+                1. Use standard professional English. No LaTeX, no Markdown, no symbols.
+                2. Use the STAR method (Situation, Task, Action, Result) for experience.
+                3. Include specific metrics and achievements (e.g., 'Increased revenue by 20%').
+                4. Focus on keywords from the Job Description.
+                
+                OUTPUT: Return ONLY the raw, professional text for the resume. No conversational filler or formatting code.
+                """
+            else:
+                prompt = f"""
+                Act as a high-end recruiter for top global MNCs. Rewrite the following resume for a {target_role} role.
+                
+                RESUME CONTENT:
+                {text[:4000]}
+                
+                REQUIREMENTS:
+                1. FORMAT: Standard text only. No LaTeX, markdown (**), or special symbols.
+                2. CONTENT: Professional summary, bullet-pointed skills, and result-oriented experience.
+                3. STANDARDS: Use global MNC terminology. Improve grammar and impact.
+                4. IMPACT: Ensure every bullet point starts with a strong action verb and includes a quantifiable result.
+                
+                OUTPUT: Return the complete, polished resume text. No labels like 'Here is your resume'.
+                """
+
+            response = model.generate_content(prompt)
+            cleaned = response.text.replace('**', '').replace('###', '').replace('---', '').strip()
+            # Remove any leading/trailing quotes often added by AI
+            cleaned = re.sub(r'^["\']|["\']$', '', cleaned)
+            return cleaned
+
         except Exception as e:
+            logger.error(f"AI Rewrite Error: {e}")
             return f"Error during AI rewrite: {str(e)}"
 
     @staticmethod
     async def generate_summary(resume_text: str, target_role: str) -> str:
         """
-        Generates a professional summary based on the entire resume content.
+        Generates a professional summary.
         """
         if not settings.GEMINI_API_KEY:
              return "AI Rewrite Service not configured."
 
-        prompt = f"""
-        Read the following resume content and write a compelling professional summary (3-4 sentences) tailored for a {target_role} position.
-        
-        Resume Content:
-        {resume_text[:2000]} 
-        
-        Professional Summary:
-        """
-        
         try:
-            return _generate(prompt).strip()
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            prompt = f"Write a 3-sentence professional summary for a {target_role} role based on: {resume_text[:2000]}. Text only, no formatting."
+            response = model.generate_content(prompt)
+            return response.text.strip()
         except Exception as e:
-            return f"Error generating summary: {str(e)}"
+            logger.error(f"Summary Generation Error: {e}")
+            return f"Error: {str(e)}"
 
     @staticmethod
     async def validate_role_fit(resume_text: str, target_role: str) -> Dict[str, Any]:
         """
-        Validates if the resume fits the target role and provides actionable feedback.
-        Returns a dictionary with match score and suggestions.
+        Validates fit and provides JSON feedback.
         """
         if not settings.GEMINI_API_KEY:
              return {"error": "AI Service not configured"}
 
-        prompt = f"""
-        Analyze the following resume content specifically for a {target_role} role at an MNC.
-        Provide a JSON response with the following keys:
-        1. "match_score": A number from 0-100 indicating fit.
-        2. "missing_skills": List of critical skills missing for {target_role}.
-        3. "improvement_areas": List of specific improvements needed for MNC application.
-        4. "rewrite_suggestions": A brief example of how a bullet point could be rewritten.
-
-        Resume Content:
-        {resume_text[:3000]}
-        
-        JSON Response:
-        """
         try:
-            text = _generate(prompt).strip()
-            if "```json" in text:
-                text = text.split("```json")[1].split("```")[0].strip()
-            elif "```" in text:
-                text = text.split("```")[1].split("```")[0].strip()
-            return json.loads(text)
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            prompt = f"""
+            Analyze resume fit for {target_role}. Return JSON only:
+            {{ "match_score": 0-100, "missing_skills": [], "improvement_areas": [] }}
+            Resume: {resume_text[:3000]}
+            """
+            response = model.generate_content(prompt)
+            json_match = re.search(r'\{.*\}', response.text, re.DOTALL)
+            if json_match:
+                return json.loads(json_match.group())
+            return {"match_score": 0}
         except Exception as e:
-            return {"error": f"Validation failed: {str(e)}", "raw_response": text if 'text' in locals() else ""}
+            logger.error(f"Validation fit error: {e}")
+            return {"error": str(e)}
