@@ -12,5 +12,5 @@ COPY . .
 # Expose port (Documentation only, Railway/Render use the PORT env var)
 EXPOSE 8000
 
-# Run commands using shell form to expand environment variables
-CMD gunicorn -k uvicorn.workers.UvicornWorker -w 2 app.main:app --bind 0.0.0.0:${PORT:-8000}
+# Run commands
+CMD ["python", "-m", "app.main"]
