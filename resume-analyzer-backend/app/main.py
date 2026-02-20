@@ -40,6 +40,10 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 def root():
     return {"message": "Welcome to Resume Analyzer AI API. Visit /docs for Swagger UI."}
 
+@app.get("/healthz")
+def health_check():
+    return {"status": "healthy"}
+
 if __name__ == "__main__":
     import uvicorn
     import os
