@@ -40,3 +40,8 @@ evaluate==0.4.1
 spacy-transformers==1.3.4
 xgboost==2.0.3
 lightgbm==4.3.0
+networkx==3.2.1
+matplotlib==3.8.2
+plotly==5.19.0
+langchain==0.1.14
+langchain-community==0.0.31

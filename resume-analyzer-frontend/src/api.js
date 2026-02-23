@@ -75,4 +75,11 @@ export const careerGuruAPI = {
     getRoadmap: (targetRole, resumeId) => api.post('/career-guru/roadmap', { target_role: targetRole, resume_id: resumeId }),
 };
 
+// Career Intelligence API
+export const careerIntelAPI = {
+    predict: (profile) => api.post('/career-intel/predict-career', profile),
+    getRoadmap: (targetRole, months = 6) => api.post('/career-intel/generate-roadmap', { target_role: targetRole, timeline_months: months }),
+    getStrategy: (tier) => api.get(`/career-intel/resume-strategy/${tier}`),
+};
+
 export default api;
