@@ -80,6 +80,7 @@ export const careerIntelAPI = {
     predict: (profile) => api.post('/career-intel/predict-career', profile),
     getRoadmap: (targetRole, months = 6) => api.post('/career-intel/generate-roadmap', { target_role: targetRole, timeline_months: months }),
     getStrategy: (tier) => api.get(`/career-intel/resume-strategy/${tier}`),
+    getMentorInsight: (resumeText, skills) => api.post('/career-intel/mentor-insight', { resume_text: resumeText, skills: skills }),
 };
 
 export default api;

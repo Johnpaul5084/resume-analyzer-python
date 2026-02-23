@@ -1,0 +1,99 @@
+{
+    "Data Scientist": {
+        "category": "IT",
+        "growth_score": 9.5,
+        "industry": [
+            "FAANG",
+            "Product",
+            "MNC"
+        ],
+        "mandatory_skills": [
+            "Python",
+            "Machine Learning",
+            "Statistics",
+            "SQL"
+        ],
+        "advanced_skills": [
+            "Deep Learning",
+            "MLOps",
+            "Feature Engineering"
+        ],
+        "tools": [
+            "Pandas",
+            "Scikit-learn",
+            "TensorFlow"
+        ],
+        "avg_salary_range": "8-25 LPA"
+    },
+    "Backend Engineer": {
+        "category": "IT",
+        "growth_score": 9.2,
+        "industry": [
+            "FAANG",
+            "Startup",
+            "MNC"
+        ],
+        "mandatory_skills": [
+            "Data Structures",
+            "Algorithms",
+            "Java or Python",
+            "Databases"
+        ],
+        "advanced_skills": [
+            "System Design",
+            "Microservices"
+        ],
+        "tools": [
+            "Spring Boot",
+            "FastAPI",
+            "Node.js"
+        ],
+        "avg_salary_range": "6-30 LPA"
+    },
+    "Mechanical Design Engineer": {
+        "category": "Core",
+        "growth_score": 8.3,
+        "industry": [
+            "Automobile",
+            "Manufacturing"
+        ],
+        "mandatory_skills": [
+            "SolidWorks",
+            "GD&T",
+            "Engineering Drawing"
+        ],
+        "advanced_skills": [
+            "Finite Element Analysis",
+            "ANSYS"
+        ],
+        "tools": [
+            "AutoCAD"
+        ],
+        "avg_salary_range": "4-12 LPA"
+    },
+    "Full Stack Developer": {
+        "category": "IT",
+        "growth_score": 9.4,
+        "industry": [
+            "Startup",
+            "Product",
+            "MNC"
+        ],
+        "mandatory_skills": [
+            "React",
+            "Node.js",
+            "JavaScript",
+            "SQL"
+        ],
+        "advanced_skills": [
+            "AWS",
+            "Docker",
+            "Nginx"
+        ],
+        "tools": [
+            "VS Code",
+            "GitHub"
+        ],
+        "avg_salary_range": "5-25 LPA"
+    }
+}

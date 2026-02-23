@@ -1,301 +1,282 @@
-# Resume Analyzer AI - Python Stack
+# 🚀 IRIS AI – Intelligent Resume & Career Intelligence Platform
 
-A comprehensive **Resume Analyzer** built with **Python (FastAPI)** backend and **React** frontend. This project features **ATS scoring**, **AI-powered resume rewriting**, **job matching**, and **user authentication**.
-
----
-
-## 🚀 **Futuristic Phoenix Upgrade (Post-AI Impact Summit 2026)**
-
-Following the **AI Impact Summit 2026 (Delhi)**, this project has been upgraded to state-of-the-art industry standards:
-
-### ✅ **High-Fidelity Features**
-1. **AI Career Guru** (Phase 3) - Conversational AI mentor for real-time career guidance.
-2. **Semantic ATS 2.0** (Phase 2) - Context-aware scoring using **Gemini 1.5 Semantic Analysis** (moves beyond simple keywords).
-3. **High-Fidelity OCR** (Phase 2) - **Sarvam AI Vision** integration for perfect parsing of complex/multilingual layouts.
-4. **Skill-Gap Roadmaps** (Phase 4) - Personalized learning paths to bridge roles using AI.
-5. **Zero-Cost Production Stack** - 100% Free deployment using Vercel, Render, and Supabase (No credit card required).
-
-### ✅ **Core Features**
-1. **User Authentication** - JWT-based login/signup
-2. **Resume Upload & Parsing** - PDF, DOCX, TXT support
-3. **ATS Scoring Engine** - Contextual match with strengths & feedback
-4. **AI Resume Rewriting** - Gemini API for MNC standard tailoring
-5. **Job Matching** - Real-time job recommendations with confidence scores
+> From Resume Scoring to Career Intelligence Engineering
+> Built with FastAPI, Semantic NLP, Vector Search, and Explainable AI
 
 ---
 
-## 📁 **Project Structure**
+# 🌍 Vision
 
-```
-resume-analyzer-python/
-├── resume-analyzer-backend/     # FastAPI Backend
-│   ├── app/
-│   │   ├── api/endpoints/       # REST API routes
-│   │   ├── core/                # Config & Security
-│   │   ├── db/                  # Database setup
-│   │   ├── models/              # SQLAlchemy models
-│   │   ├── schemas/             # Pydantic schemas
-│   │   ├── services/            # Business logic (ML/AI)
-│   │   └── main.py              # App entry point
-│   ├── requirements.txt
-│   ├── Dockerfile
-│   └── .env
-│
-├── resume-analyzer-frontend/    # React Frontend
-│   ├── src/
-│   │   ├── components/          # UI components
-│   │   ├── api.js               # API client
-│   │   ├── App.jsx              # Main app
-│   │   └── main.jsx
-│   ├── package.json
-│   └── vite.config.js
-│
-└── PROJECT_SUMMARY.md
-```
+IRIS AI is not just a Resume Analyzer.
+
+It is a **Semantic Resume Intelligence & Career Guidance Platform** designed to bridge the awareness gap for Tier-2/3/4 college students across IT, Core, and Non-IT domains.
+
+The system combines:
+
+* Transformer-based NLP
+* Semantic embeddings
+* Vector search (FAISS)
+* Multi-metric ATS scoring
+* AI-powered career mentorship
+* Skill graph visualization
+* Market demand analysis
+
+Inspired by insights from **AI Impact Summit 2026 (Delhi)**.
 
 ---
 
-## 🚀 **Quick Start**
+# 🧠 Core System Capabilities
 
-### **Prerequisites**
-- Python 3.10+
-- Node.js 18+
-- PostgreSQL 14+
+## 1️⃣ Semantic ATS 2.0
 
-### **1. Backend Setup**
+Unlike traditional keyword-based ATS systems, IRIS uses:
 
-```bash
-cd resume-analyzer-backend
+* Sentence-Transformers (MiniLM)
+* Cosine Similarity Matching
+* Context-aware evaluation
 
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Download spaCy model
-python -m spacy download en_core_web_sm
-
-# Setup database
-# Create PostgreSQL database: resume_analyzer_ai
-
-# Configure .env file
-# Edit .env with your database credentials and API keys
-
-# Run server
-uvicorn app.main:app --reload
-```
-
-Backend will run on: **http://localhost:8000**
-API Docs: **http://localhost:8000/docs**
-
-### **2. Frontend Setup**
-
-```bash
-cd resume-analyzer-frontend
-
-# Install dependencies
-npm install
-
-# Run dev server
-npm run dev
-```
-
-Frontend will run on: **http://localhost:3000**
+✔ Role Fit Score
+✔ Skill Coverage Score
+✔ Impact Quantification Score
+✔ Experience Depth Score
+✔ Composite Resume Strength Index
 
 ---
 
-## 🔧 **Technology Stack**
+## 2️⃣ AI Career Mentor (IRIS Guru)
 
-| Layer | Technology |
-|-------|-----------|
-| **Backend** | FastAPI, Python 3.10+ |
-| **Database** | PostgreSQL + SQLAlchemy |
-| **ML/NLP** | spaCy, scikit-learn, LanguageTool |
-| **AI** | Google Gemini API |
-| **Frontend** | React 18, Vite, Tailwind CSS |
-| **Auth** | JWT (python-jose + passlib) |
-| **Deployment** | Docker, Render/Railway ready |
+A conversational AI mentor that:
 
----
+* Detects student domain (IT / Core / Non-IT)
+* Recommends high-demand roles
+* Identifies mandatory missing skills
+* Generates personalized 6-month roadmap
+* Suggests FAANG / MNC preparation strategy
 
-## 📊 **API Endpoints**
+Supports:
 
-### **Authentication**
-- `POST /api/v1/login/access-token` - Login
-- `POST /api/v1/signup` - Register
-
-### **Resumes**
-- `POST /api/v1/resumes/upload` - Upload & analyze resume
-- `GET /api/v1/resumes/` - List user resumes
-- `GET /api/v1/resumes/{id}` - Get resume details
-
-### **Jobs**
-- `POST /api/v1/jobs/match/{resume_id}` - Match resume to job
-- `GET /api/v1/jobs/recommendations/{resume_id}` - Get job recommendations
+* CSE / IT
+* Mechanical
+* ECE
+* Civil
+* Business / MBA
+* Multi-disciplinary profiles
 
 ---
 
-## 🎓 **B.Tech Final Year Project Highlights**
+## 3️⃣ Dynamic AI Roadmap Generator
 
-### **Machine Learning Components**
-1. **NLP-based Keyword Extraction** - Using spaCy NER and TF-IDF
-2. **Semantic Similarity** - Cosine similarity for job matching
-3. **Grammar Analysis** - LanguageTool integration
-4. **AI Text Generation** - Gemini API for resume rewriting
+Uses LLM with structured prompts to generate:
 
-### **Real-Time Features**
-- Live ATS score calculation
-- Instant job recommendations
-- AI-powered feedback
+* Monthly learning plans
+* Project suggestions
+* Interview preparation guidance
+* Resume improvement strategy
 
-### **Production-Ready**
-- JWT authentication
-- Docker containerization
-- Cloud deployment ready (Render/Railway)
-- RESTful API design
-- Comprehensive error handling
+Format:
+
+Month 1-2 → Foundation
+Month 3-4 → Advanced Skills
+Month 5 → Projects
+Month 6 → Interview Preparation
 
 ---
 
-## 🌐 **Deployment Guide**
+## 4️⃣ Market Demand Detection Engine
 
-### **Option 1: Render (Recommended)**
+Role demand intelligence powered by structured demand scoring:
 
-**Backend:**
-1. Create new Web Service on Render
-2. Connect GitHub repo
-3. Set build command: `pip install -r requirements.txt`
-4. Set start command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-5. Add environment variables from `.env`
+* 🔥 Very High Demand
+* 📈 High Demand
+* Stable Demand
+* Emerging / Niche
 
-**Frontend:**
-1. Create Static Site on Render
-2. Build command: `npm install && npm run build`
-3. Publish directory: `dist`
+Helps students make informed career decisions.
 
-**Database:**
-- Use Render PostgreSQL or Supabase free tier
+---
 
-### **Option 2: Docker**
+## 5️⃣ Skill Graph Visualization
 
-```bash
-# Build and run with Docker
-docker build -t resume-analyzer-backend ./resume-analyzer-backend
-docker run -p 8000:8000 resume-analyzer-backend
+Graph-based skill progression using NetworkX.
+
+Visualizes:
+
+* Existing skills (Green)
+* Missing mandatory skills (Red)
+* Advanced future skills (Blue)
+
+Shows career growth pathway instead of static lists.
+
+---
+
+## 6️⃣ Resume Strength Radar Chart
+
+Plotly-powered visualization displaying:
+
+* Technical Strength
+* Experience Depth
+* ATS Optimization
+* Impact Quantification
+* Role Fit
+
+Professional analytics-style UI.
+
+---
+
+# 🏗 System Architecture
+
+```text
+Resume Upload
+    ↓
+Document Parsing (PDF/DOCX/OCR)
+    ↓
+NLP Extraction (spaCy + Transformers)
+    ↓
+Embedding Generation (MiniLM)
+    ↓
+Vector Retrieval (FAISS)
+    ↓
+Multi-Metric Scoring Engine
+    ↓
+Skill Gap Analysis
+    ↓
+Market Demand Engine
+    ↓
+AI Career Mentor
+    ↓
+Skill Graph + Radar Visualization
 ```
 
 ---
 
-## 📝 **Environment Variables**
+# 🛠 Technology Stack
 
-Create `.env` file in `resume-analyzer-backend/`:
+## Backend
 
-```env
-POSTGRES_SERVER=localhost
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=your_password
-POSTGRES_DB=resume_analyzer_ai
+* FastAPI
+* SQLAlchemy + PostgreSQL
+* JWT Authentication
+* Docker-ready architecture
 
-SECRET_KEY=your-secret-key-here
-GEMINI_API_KEY=your-gemini-api-key
+## AI / ML
 
-# Optional
-AWS_ACCESS_KEY_ID=
-AWS_SECRET_ACCESS_KEY=
-AWS_S3_BUCKET=
+* spaCy (NER)
+* Sentence-Transformers
+* FAISS (Vector Search)
+* scikit-learn
+* XGBoost (optional expansion)
+* Google Gemini (AI generation)
+
+## Visualization
+
+* Plotly (Radar Charts)
+* NetworkX (Skill Graph)
+
+## Frontend
+
+* React 18
+* Vite
+* Tailwind CSS
+* Recharts / Plotly
+
+---
+
+# 📊 Scoring Model
+
+Composite Resume Strength Index:
+
+```python
+final_score = (
+    0.35 * semantic_similarity +
+    0.25 * skill_coverage +
+    0.20 * experience_depth +
+    0.20 * ats_format_score
+)
 ```
 
----
-
-## 🎨 **UI Features**
-
-- **Modern Design** - Gradient backgrounds, glassmorphism
-- **Responsive** - Mobile-friendly
-- **Animations** - Smooth transitions and loading states
-- **Charts** - Visual ATS score breakdown (Recharts)
-- **Dark Mode Ready** - Tailwind CSS utilities
+Transparent & explainable scoring — no random percentages.
 
 ---
 
-## 🔐 **Security Features**
+# 🎓 Academic & Research Relevance
 
-- Password hashing (bcrypt)
-- JWT token authentication
-- CORS protection
-- SQL injection prevention (SQLAlchemy ORM)
-- File upload validation
+This project demonstrates:
 
----
+* Applied NLP
+* Semantic Retrieval Systems
+* Multi-metric Evaluation Models
+* Explainable AI
+* Vector Database Implementation
+* Career Ontology Modeling
 
-## 📈 **Future Enhancements**
-
-- [ ] Email notifications (SMTP integration)
-- [ ] Rate limiting (Redis)
-- [ ] Resume templates library
-- [ ] Bulk resume analysis
-- [ ] Admin dashboard
-- [ ] Analytics & reporting
+Bridges real-world recruitment systems with AI-based personalization.
 
 ---
 
-## 🐛 **Troubleshooting**
+# � Deployment
 
-**Issue:** `ModuleNotFoundError: No module named 'spacy'`
-```bash
-pip install spacy
-python -m spacy download en_core_web_sm
-```
+100% Free Production Stack:
 
-**Issue:** Database connection error
-- Ensure PostgreSQL is running
-- Check `.env` credentials
-- Create database: `CREATE DATABASE resume_analyzer_ai;`
+* Frontend → Vercel
+* Backend → Render
+* Database → Supabase
+* Vector Store → FAISS (local index)
 
-**Issue:** CORS errors
-- Update `BACKEND_CORS_ORIGINS` in `app/core/config.py`
+No credit card required.
 
 ---
 
-## 👨‍💻 **For College Project Presentation**
+# 🔐 Security & Production Readiness
 
-### **Key Points to Highlight:**
-
-1. **Machine Learning Integration**
-   - NLP for text analysis
-   - TF-IDF vectorization
-   - Cosine similarity for matching
-
-2. **AI-Powered Features**
-   - Gemini API for intelligent rewriting
-   - Real-time job recommendations
-
-3. **Full-Stack Development**
-   - RESTful API design
-   - Modern React frontend
-   - Database design & optimization
-
-4. **Production Deployment**
-   - Cloud-hosted application
-   - Docker containerization
-   - Scalable architecture
+* JWT authentication
+* Password hashing (bcrypt)
+* ORM-based SQL injection protection
+* File validation
+* CORS configuration
+* Docker containerization
 
 ---
 
-## 📄 **License**
+# � Future Roadmap
 
-MIT License - Free for educational and commercial use
-
----
-
-## 🙏 **Acknowledgments**
-
-- **spaCy** - NLP library
-- **LanguageTool** - Grammar checking
-- **Google Gemini** - AI text generation
-- **FastAPI** - Modern Python web framework
+* GitHub Profile Intelligence
+* LinkedIn Resume Analyzer
+* Career Probability Model (XGBoost)
+* Interview Question Generator per Role
+* Salary Prediction Engine
+* RAG-based Career Advisor
 
 ---
 
-**Built with ❤️ for B.Tech Final Year Project**
+# 🎤 For Final Year Presentation
+
+Key Highlights:
+
+✔ Semantic Resume Intelligence (not keyword matching)
+✔ AI Career Mentor for multi-branch students
+✔ Skill Graph Visualization
+✔ Market Demand Awareness
+✔ Explainable AI Feedback
+✔ Production-Ready Full Stack Deployment
+
+---
+
+# 🏆 Project Positioning
+
+IRIS AI transforms resume evaluation from:
+
+“Keyword Matching Tool”
+
+to
+
+“AI-Powered Career Intelligence Platform”
+
+---
+
+# � License
+
+MIT License
+
+---
+
+Built with ❤️ for innovation in AI-driven career intelligence.

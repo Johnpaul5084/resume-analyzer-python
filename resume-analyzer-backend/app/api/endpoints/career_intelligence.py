@@ -16,6 +16,12 @@ class RoadmapRequest(BaseModel):
     target_role: str
     timeline_months: Optional[int] = 6
 
+from app.career_engine.mentor_bot_service import IRISMentorBot
+
+class MentorRequest(BaseModel):
+    resume_text: str
+    skills: List[str]
+
 @router.post("/predict-career")
 def predict_career(profile: CareerProfile):
     return CareerPredictor.predict_paths(profile.branch, profile.skills, profile.interests)
@@ -27,3 +33,7 @@ def generate_roadmap(request: RoadmapRequest):
 @router.get("/resume-strategy/{tier}")
 def get_resume_strategy(tier: str):
     return ResumeStrategy.get_strategy(tier)
+
+@router.post("/mentor-insight")
+def get_mentor_insight(request: MentorRequest):
+    return IRISMentorBot.analyze_career_path(request.resume_text, request.skills)
