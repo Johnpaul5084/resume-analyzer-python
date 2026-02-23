@@ -43,8 +43,8 @@ export default function Dashboard() {
                 {/* Header */}
                 <div className="flex justify-between items-center mb-8">
                     <div>
-                        <h1 className="text-4xl font-bold text-gray-800 mb-2">Resume Dashboard</h1>
-                        <p className="text-gray-600">Manage and optimize your resumes with AI</p>
+                        <h1 className="text-4xl font-bold text-gray-800 mb-2">IRIS: Resume Intelligence</h1>
+                        <p className="text-gray-600">Advanced AI-Powered Role Fit & Semantic Analysis Engine</p>
                     </div>
                     <button onClick={handleLogout} className="btn-secondary flex items-center gap-2">
                         <LogOut size={18} />

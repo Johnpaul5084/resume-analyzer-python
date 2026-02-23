@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { resumeAPI, jobAPI } from '../api';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer, Tooltip } from 'recharts';
 import { FileText, TrendingUp, AlertCircle, Briefcase, ArrowLeft } from 'lucide-react';
 import CareerGuru from './CareerGuru';
 
@@ -68,10 +68,10 @@ export default function ResumeDetail() {
     }
 
     const scoreData = resume.score_breakdown ? [
-        { name: 'Keywords', value: resume.score_breakdown.keywords_match || 0, color: '#3b82f6' },
-        { name: 'Grammar', value: resume.score_breakdown.grammar_score || 0, color: '#10b981' },
-        { name: 'Relevance', value: resume.score_breakdown.relevance_score || 0, color: '#f59e0b' },
-        { name: 'Structure', value: resume.score_breakdown.structure_score || 0, color: '#8b5cf6' },
+        { subject: 'Semantic Match', A: resume.score_breakdown.semantic_match || 0, fullMark: 100 },
+        { subject: 'Skill Depth', A: resume.score_breakdown.skill_depth || 0, fullMark: 100 },
+        { subject: 'Structure', A: resume.score_breakdown.structure_quality || 0, fullMark: 100 },
+        { subject: 'Market Fit', A: resume.score_breakdown.market_readiness || 0, fullMark: 100 },
     ] : [];
 
     const getScoreColor = (score) => {
@@ -115,23 +115,19 @@ export default function ResumeDetail() {
                         <h2 className="text-2xl font-bold text-gray-800 mb-6">Score Breakdown</h2>
                         {scoreData.length > 0 ? (
                             <ResponsiveContainer width="100%" height={300}>
-                                <PieChart>
-                                    <Pie
-                                        data={scoreData}
-                                        cx="50%"
-                                        cy="50%"
-                                        labelLine={false}
-                                        label={({ name, value }) => `${name}: ${value.toFixed(1)}%`}
-                                        outerRadius={80}
-                                        fill="#8884d8"
-                                        dataKey="value"
-                                    >
-                                        {scoreData.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={entry.color} />
-                                        ))}
-                                    </Pie>
+                                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={scoreData}>
+                                    <PolarGrid />
+                                    <PolarAngleAxis dataKey="subject" />
+                                    <PolarRadiusAxis angle={30} domain={[0, 100]} />
+                                    <Radar
+                                        name="Resume Score"
+                                        dataKey="A"
+                                        stroke="#4f46e5"
+                                        fill="#4f46e5"
+                                        fillOpacity={0.6}
+                                    />
                                     <Tooltip />
-                                </PieChart>
+                                </RadarChart>
                             </ResponsiveContainer>
                         ) : (
                             <p className="text-gray-500">No breakdown data available</p>
@@ -139,13 +135,13 @@ export default function ResumeDetail() {
 
                         <div className="mt-6 space-y-3">
                             {scoreData.map((item) => (
-                                <div key={item.name} className="flex items-center justify-between">
+                                <div key={item.subject} className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
-                                        <div className="w-4 h-4 rounded" style={{ backgroundColor: item.color }}></div>
-                                        <span className="font-medium text-gray-700">{item.name}</span>
+                                        <div className="w-4 h-4 rounded bg-indigo-600"></div>
+                                        <span className="font-medium text-gray-700">{item.subject}</span>
                                     </div>
-                                    <span className="font-bold" style={{ color: item.color }}>
-                                        {item.value.toFixed(1)}%
+                                    <span className="font-bold text-indigo-600">
+                                        {item.A.toFixed(1)}%
                                     </span>
                                 </div>
                             ))}

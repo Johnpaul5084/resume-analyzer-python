@@ -10,6 +10,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Expose port (Documentation only, Railway/Render use the PORT env var)
+RUN python -m spacy download en_core_web_sm
 EXPOSE 8000
 
 # Run commands
