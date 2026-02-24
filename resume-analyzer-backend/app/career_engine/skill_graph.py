@@ -1,17 +1,14 @@
-import networkx as nx
 from typing import List, Dict
 
 class SkillGraph:
     """
-    AI Skill Graph Logic
-    Visualizes skill dependencies using NetworkX.
+    Lightweight Skill Graph Logic.
+    Removed NetworkX to save RAM. Uses simple list processing.
     """
 
     @staticmethod
     def get_skill_dependencies(primary_skill: str) -> List[Dict[str, str]]:
-        G = nx.DiGraph()
-        
-        # Define some basic dependencies
+        # Define some basic dependencies matching the ontology
         deps = {
             "Machine Learning": ["Python", "Statistics", "Linear Algebra"],
             "DevOps": ["Docker", "Linux", "CI/CD"],

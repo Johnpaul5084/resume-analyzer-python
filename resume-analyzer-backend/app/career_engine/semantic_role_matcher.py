@@ -1,5 +1,4 @@
 from app.core.ai_model import AIModelManager
-import faiss
 import numpy as np
 import json
 import os
@@ -8,8 +7,12 @@ import logging
 logger = logging.getLogger(__name__)
 
 class SemanticRoleMatcher:
-    _index = None
+    """
+    Lightweight Semantic Role Matcher.
+    Removed FAISS to fit in 512MB RAM.
+    """
     _role_names = []
+    _role_data = {}
     
     @classmethod
     def _initialize_index(cls):
@@ -18,41 +21,38 @@ class SemanticRoleMatcher:
             return
             
         with open(db_path, encoding='utf-8') as f:
-            roles = json.load(f)
-            
-        role_texts = []
-        cls._role_names = []
-        
-        for name, data in roles.items():
-            combined = f"{name} {' '.join(data.get('mandatory_skills', []))} {data.get('category', '')}"
-            role_texts.append(combined)
-            cls._role_names.append(name)
-            
-        model = AIModelManager.get_model()
-        embeddings = model.encode(role_texts)
-        
-        dimension = embeddings.shape[1]
-        cls._index = faiss.IndexFlatL2(dimension)
-        cls._index.add(np.array(embeddings))
+            cls._role_data = json.load(f)
+        cls._role_names = list(cls._role_data.keys())
 
     @classmethod
     def find_best_roles(cls, resume_text: str, top_k: int = 3):
         try:
-            if cls._index is None:
+            if not cls._role_names:
                 cls._initialize_index()
                 
-            if cls._index is None:
+            if not cls._role_names:
                 return ["Software Engineer"]
                 
-            model = AIModelManager.get_model()
-            resume_embedding = model.encode([resume_text])
+            # Lightweight keyword Match
+            text_lower = resume_text.lower()
+            scores = []
             
-            distances, indices = cls._index.search(np.array(resume_embedding), top_k)
+            for role in cls._role_names:
+                score = 0
+                if role.lower() in text_lower:
+                    score += 5
+                
+                # Skill matching
+                skills = cls._role_data[role].get('mandatory_skills', [])
+                for skill in skills:
+                    if skill.lower() in text_lower:
+                        score += 1
+                
+                scores.append((role, score))
             
-            results = []
-            for i in indices[0]:
-                if i != -1 and i < len(cls._role_names):
-                    results.append(cls._role_names[i])
+            scores.sort(key=lambda x: x[1], reverse=True)
+            results = [s[0] for s in scores[:top_k] if s[1] > 0]
+            
             return results if results else ["Software Engineer"]
         except Exception as e:
             logger.error(f"SemanticRoleMatcher error: {e}")
