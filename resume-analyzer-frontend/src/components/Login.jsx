@@ -20,20 +20,33 @@ export default function Login() {
         const checkHealth = async () => {
             try {
                 const baseUrl = getApiBaseUrl();
-                const response = await fetch(`${baseUrl}/healthz`);
+                const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+                const isBaseUrlDefault = baseUrl === '/api/v1';
 
-                // If it's the SPA index.html, the content-type will be text/html
+                if (isProduction && isBaseUrlDefault) {
+                    console.error('AI System: VITE_API_URL is missing in production environment!');
+                    setBackendStatus('misconfigured');
+                    return;
+                }
+
+                console.log('AI System: Probing neural link...', { baseUrl });
+
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+                const response = await fetch(`${baseUrl}/healthz`, { signal: controller.signal });
+                clearTimeout(timeoutId);
+
                 const contentType = response.headers.get('content-type');
                 if (response.ok && contentType && contentType.includes('application/json')) {
                     setBackendStatus('online');
                 } else {
-                    // It returned 200 but it wasn't JSON (likely Vercel index.html rewrite)
                     setBackendStatus('offline');
-                    console.warn('AI System: Backend reached but returned non-JSON. Potential proxy/rewrite issue.', { contentType });
+                    console.warn('AI System: Link responded but returned non-AI data. Check VITE_API_URL.', { contentType });
                 }
             } catch (err) {
                 setBackendStatus('offline');
-                console.error('AI System: Backend connection failed.', err);
+                console.error('AI System: Neural link unreachable.', err);
             }
         };
         checkHealth();
@@ -99,13 +112,22 @@ export default function Login() {
                             </h1>
                             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full">
                                 <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${backendStatus === 'online' ? 'bg-emerald-500' :
-                                    backendStatus === 'offline' ? 'bg-rose-500' : 'bg-amber-500'
+                                        backendStatus === 'offline' ? 'bg-rose-500' :
+                                            backendStatus === 'misconfigured' ? 'bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.5)]' : 'bg-slate-500'
                                     }`}></span>
                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">
                                     System Status: {backendStatus.toUpperCase()}
                                 </span>
                             </div>
                         </div>
+
+                        {backendStatus === 'misconfigured' && (
+                            <div className="mb-8 p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl">
+                                <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest leading-relaxed">
+                                    ⚠️ Connection Warning: VITE_API_URL not detected. Ensure it is set in Vercel to your Render backend URL.
+                                </p>
+                            </div>
+                        )}
 
                         {/* Switcher */}
                         <div className="grid grid-cols-2 p-1.5 bg-black/40 rounded-3xl mb-10 border border-white/5">
