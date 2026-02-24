@@ -1,0 +1,12 @@
+resume-analyzer-frontend/
+**/venv/
+**/.git/
+**/.env
+**/__pycache__/
+*.db
+*.log
+uploads/
+nixpacks.toml
+Procfile
+render.yaml
+railway.json
