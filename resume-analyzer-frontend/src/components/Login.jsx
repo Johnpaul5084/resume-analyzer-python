@@ -24,15 +24,12 @@ export default function Login() {
                 const isBaseUrlDefault = baseUrl === '/api/v1';
 
                 if (isProduction && isBaseUrlDefault) {
-                    console.error('AI System: VITE_API_URL is missing in production environment!');
                     setBackendStatus('misconfigured');
                     return;
                 }
 
-                console.log('AI System: Probing neural link...', { baseUrl });
-
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                const timeoutId = setTimeout(() => controller.abort(), 12000);
 
                 const response = await fetch(`${baseUrl}/healthz`, { signal: controller.signal });
                 clearTimeout(timeoutId);
@@ -41,11 +38,12 @@ export default function Login() {
                 if (response.ok && contentType && contentType.includes('application/json')) {
                     setBackendStatus('online');
                 } else {
-                    setBackendStatus('offline');
-                    console.warn('AI System: Link responded but returned non-AI data. Check VITE_API_URL.', { contentType });
+                    setBackendStatus(`offline (${response.status})`);
+                    console.warn('AI System: Link responded but returned non-AI data.', response.status);
                 }
             } catch (err) {
-                setBackendStatus('offline');
+                const innerMsg = err.name === 'AbortError' ? 'Timeout' : err.message;
+                setBackendStatus(`offline (${innerMsg})`);
                 console.error('AI System: Neural link unreachable.', err);
             }
         };
@@ -112,9 +110,9 @@ export default function Login() {
                             </h1>
                             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full">
                                 <span className={`w-1.5 h-1.5 rounded-full ${backendStatus === 'online' ? 'bg-emerald-500 animate-pulse' :
-                                        backendStatus === 'offline' ? 'bg-rose-500' :
-                                            backendStatus === 'misconfigured' ? 'bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.5)]' :
-                                                'bg-indigo-500 animate-ping'
+                                    backendStatus === 'offline' ? 'bg-rose-500' :
+                                        backendStatus === 'misconfigured' ? 'bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.5)]' :
+                                            'bg-indigo-500 animate-ping'
                                     }`}></span>
                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">
                                     System Status: {backendStatus === 'unknown' ? 'INITIALIZING...' : backendStatus.toUpperCase()}

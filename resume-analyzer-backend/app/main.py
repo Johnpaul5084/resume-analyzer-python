@@ -18,21 +18,8 @@ from app.db.session import engine # AI Resume Analyzer - v1.0.1-stable
 import logging
 from app.models import all_models # Ensure models are registered
 
-# Create Tables (Simple approach for MVP, use Alembic for Prod)
-all_models.Base.metadata.create_all(bind=engine)
-
-# Seed Database
-from app.db.session import SessionLocal
-from app.db.init_db import init_db
-db = SessionLocal()
-try:
-    init_db(db)
-except Exception as e:
-    print(f"Error seeding database: {e}")
-finally:
-    db.close()
-
 from app.career_engine.rag_engine import build_index
+import threading
 
 limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(
@@ -52,11 +39,25 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # Global Security Layer
 app.add_middleware(AISecurityMiddleware)
 
-import threading
-
 @app.on_event("startup")
 def startup_event():
-    # Build RAG Index & Preload Models in Background to avoid blocking Cold Start
+    # 1. Database Initialization
+    try:
+        print("AI System: Verifying Neural Database...")
+        all_models.Base.metadata.create_all(bind=engine)
+        
+        from app.db.session import SessionLocal
+        from app.db.init_db import init_db
+        db = SessionLocal()
+        try:
+            init_db(db)
+        finally:
+            db.close()
+        print("✅ AI Database: Synchronized.")
+    except Exception as e:
+        print(f"❌ AI Database: Sync Failed: {e}")
+
+    # 2. Build RAG Index & Preload Models in Background
     def preload_all():
         print("AI System: Initializing RAG Engine & NLP Models in background...")
         try:
