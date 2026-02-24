@@ -18,8 +18,8 @@ RUN pip install --no-cache-dir https://github.com/explosion/spacy-models/release
 # Copy application source
 COPY . .
 
-# Expose port
-EXPOSE 10000
+# Expose port (Render sets $PORT dynamically)
+EXPOSE 8080
 
-# Run commands
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "10000"]
+# Run commands with shell support for environment variables
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080}"]
