@@ -28,6 +28,16 @@ app = FastAPI(
     description="AI Resume Analyzer - Intelligent Resume & Career Intelligence Platform."
 )
 
+# 🔥 UNIVERSAL CORS UNBLOCKER (Priority 1)
+# Allows Vercel Preview URLs, Local Dev, and Production domains
+app.add_middleware(
+    CORSMiddleware,
+    allow_origin_regex=r"https://.*\.vercel\.app|http://localhost:.*|http://127\.0\.0\.1:.*",
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # System Diagnostic: Ensure AI Engine has a pulse
 if not os.getenv("GEMINI_API_KEY"):
     raise RuntimeError("❌ AI Neural Error: GEMINI_API_KEY not configured properly in .env")
@@ -72,25 +82,6 @@ def startup_event():
             print(f"AI System: Preload warning: {e}")
 
     threading.Thread(target=preload_all, daemon=True).start()
-
-# Set all CORS enabled origins
-# Include common Vite ports (5173) and local variants
-origins = [
-    "https://resume-analyzer-python.vercel.app",
-    "https://resume-analyzer-frontend-blond.vercel.app",
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-] + settings.BACKEND_CORS_ORIGINS
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
