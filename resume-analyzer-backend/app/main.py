@@ -93,8 +93,8 @@ app.add_middleware(
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
 @app.get("/")
-def root():
-    return {"message": "Welcome to Resume Analyzer AI API. Visit /docs for Swagger UI."}
+def health():
+    return {"status": "running"}
 
 @app.get("/healthz")
 def health_check():
