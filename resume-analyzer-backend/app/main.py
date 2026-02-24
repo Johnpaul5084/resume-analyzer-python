@@ -76,6 +76,8 @@ def startup_event():
 # Set all CORS enabled origins
 # Include common Vite ports (5173) and local variants
 origins = [
+    "https://resume-analyzer-python.vercel.app",
+    "https://resume-analyzer-frontend-blond.vercel.app",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://localhost:3000",
@@ -84,7 +86,7 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Allow all origins for production stability
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
