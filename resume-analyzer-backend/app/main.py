@@ -14,7 +14,8 @@ from app.middleware.security import AISecurityMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
-from app.db.session import engine
+from app.db.session import engine # AI Resume Analyzer - v1.0.1-stable
+import logging
 from app.models import all_models # Ensure models are registered
 
 # Create Tables (Simple approach for MVP, use Alembic for Prod)
