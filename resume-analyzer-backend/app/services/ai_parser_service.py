@@ -5,9 +5,9 @@ from typing import Dict, List, Any
 
 logger = logging.getLogger(__name__)
 
-class IRISParserService:
+class AIParserService:
     """
-    Intelligent Resume Intelligence System (IRIS) Parser
+    AI Resume Analyzer Parser
     Uses spaCy NER and rule-based extraction for high-fidelity structured data.
     IIT/IIIT Level Implementation
     """
@@ -29,15 +29,15 @@ class IRISParserService:
         """
         Main entry point for structured extraction.
         """
-        nlp = IRISParserService.get_nlp()
+        nlp = AIParserService.get_nlp()
         doc = nlp(text) if nlp else None
         
         return {
-            "personal_info": IRISParserService._extract_personal_info(text, doc),
-            "education": IRISParserService._extract_education(text, doc),
-            "experience": IRISParserService._extract_experience(text, doc),
-            "skills": IRISParserService._extract_skills(text, doc),
-            "projects": IRISParserService._extract_projects(text, doc),
+            "personal_info": AIParserService._extract_personal_info(text, doc),
+            "education": AIParserService._extract_education(text, doc),
+            "experience": AIParserService._extract_experience(text, doc),
+            "skills": AIParserService._extract_skills(text, doc),
+            "projects": AIParserService._extract_projects(text, doc),
             "entities": [(ent.text, ent.label_) for ent in doc.ents] if doc else []
         }
 

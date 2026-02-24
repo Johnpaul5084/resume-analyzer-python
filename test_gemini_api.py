@@ -17,28 +17,28 @@ if not api_key:
     print("Please add your Gemini API key to resume-analyzer-backend/.env")
     exit(1)
 
-print(f"✅ API Key found: {api_key[:10]}...{api_key[-5:]}")
-print("\n🧪 Testing Gemini API with gemini-1.5-flash model...\n")
+print(f"[OK] API Key found: {api_key[:10]}...{api_key[-5:]}")
+print("\n[TEST] Testing Gemini API with gemini-1.5-flash model...\n")
 
 try:
     genai.configure(api_key=api_key)
     
     # Test with the NEW model name
-    print("📡 Creating model: gemini-1.5-flash")
+    print("[INFO] Creating model: gemini-1.5-flash")
     model = genai.GenerativeModel('gemini-1.5-flash')
     
-    print("📤 Sending test prompt...")
+    print("[UP] Sending test prompt...")
     response = model.generate_content("Rewrite this professionally: I did data analysis using Python")
     
-    print("\n✅ SUCCESS! Gemini API is working!\n")
-    print("📝 Response:")
+    print("\n[SUCCESS] Gemini API is working!\n")
+    print("RES:")
     print("-" * 50)
     print(response.text)
     print("-" * 50)
-    print("\n🎉 The AI rewrite feature should work in your application!")
+    print("\n[DONE] The AI rewrite feature should work in your application!")
     
 except Exception as e:
-    print(f"\n❌ ERROR: {str(e)}\n")
+    print(f"\n[ERROR] {str(e)}\n")
     
     if "404" in str(e) and "gemini-pro" in str(e):
         print("⚠️  The error mentions 'gemini-pro' which means:")

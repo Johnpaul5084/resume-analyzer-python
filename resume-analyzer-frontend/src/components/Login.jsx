@@ -57,80 +57,110 @@ export default function Login() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-4">
-            <div className="card max-w-md w-full animate-fade-in">
-                <div className="text-center mb-8">
-                    <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
-                        Resume Analyzer AI
-                    </h1>
-                    <p className="text-gray-600">Optimize your resume with AI-powered insights</p>
+        <div className="min-h-screen flex items-center justify-center p-6 bg-slate-950 relative overflow-hidden">
+            {/* Background Ambient Effects */}
+            <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] animate-pulse-slow"></div>
+            <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-blue-600/5 rounded-full blur-[120px] animate-pulse-slow delay-1000"></div>
+
+            <div className="w-full max-w-md relative z-10 transition-all duration-700">
+                <div className="glass-card p-1 border border-white/5 relative group overflow-hidden">
+                    <div className="bg-slate-900/60 backdrop-blur-3xl p-10 lg:p-12 rounded-[40px]">
+                        {/* Header */}
+                        <div className="text-center mb-12">
+                            <h1 className="text-4xl font-black tracking-tighter bg-gradient-to-r from-white via-indigo-200 to-slate-500 bg-clip-text text-transparent mb-4">
+                                AI RESUME ANALYZER
+                            </h1>
+                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full">
+                                <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse"></span>
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Career Intelligence Suite v4.2</span>
+                            </div>
+                        </div>
+
+                        {/* Switcher */}
+                        <div className="grid grid-cols-2 p-1.5 bg-black/40 rounded-3xl mb-10 border border-white/5">
+                            <button
+                                onClick={() => setIsLogin(true)}
+                                className={`py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 ${isLogin ? 'bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.1)]' : 'text-slate-500 hover:text-white'}`}
+                            >
+                                Access
+                            </button>
+                            <button
+                                onClick={() => setIsLogin(false)}
+                                className={`py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 ${!isLogin ? 'bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.1)]' : 'text-slate-500 hover:text-white'}`}
+                            >
+                                Initialize
+                            </button>
+                        </div>
+
+                        {/* Form */}
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            {!isLogin && (
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Full Signature</label>
+                                    <input
+                                        type="text"
+                                        className="w-full bg-black/40 border border-white/5 px-6 py-4 rounded-2xl text-sm font-medium text-white focus:ring-1 focus:ring-indigo-600/30 transition-all outline-none"
+                                        value={formData.full_name}
+                                        onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                                        placeholder="Identification Name"
+                                        required={!isLogin}
+                                    />
+                                </div>
+                            )}
+
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Neural Hub Email</label>
+                                <input
+                                    type="email"
+                                    className="w-full bg-black/40 border border-white/5 px-6 py-4 rounded-2xl text-sm font-medium text-white focus:ring-1 focus:ring-indigo-600/30 transition-all outline-none"
+                                    value={formData.email}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                    placeholder="name@nexus.com"
+                                    required
+                                />
+                            </div>
+
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Encryption Key</label>
+                                <input
+                                    type="password"
+                                    className="w-full bg-black/40 border border-white/5 px-6 py-4 rounded-2xl text-sm font-medium text-white focus:ring-1 focus:ring-indigo-600/30 transition-all outline-none"
+                                    value={formData.password}
+                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                    placeholder="••••••••"
+                                    required
+                                />
+                            </div>
+
+                            {error && (
+                                <div className="bg-rose-500/5 border border-rose-500/20 text-rose-400 p-4 rounded-2xl text-[10px] font-black uppercase tracking-widest animate-shake leading-relaxed">
+                                    <AlertTriangle className="inline-block mr-2 mt-[-2px]" size={14} />
+                                    {error}
+                                </div>
+                            )}
+
+                            <button
+                                type="submit"
+                                className="w-full py-5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-[32px] text-xs font-black uppercase tracking-[0.4em] shadow-[0_0_30px_rgba(79,70,229,0.2)] hover:shadow-[0_0_40px_rgba(79,70,229,0.3)] transition-all transform active:scale-[0.98] mt-4"
+                                disabled={loading}
+                            >
+                                {loading ? (
+                                    <div className="flex items-center justify-center gap-3">
+                                        <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                                        <span>Synchronizing</span>
+                                    </div>
+                                ) : isLogin ? 'Establish Link' : 'Commit Neural Profile'}
+                            </button>
+                        </form>
+                    </div>
                 </div>
 
-                <div className="flex gap-2 mb-6">
-                    <button
-                        onClick={() => setIsLogin(true)}
-                        className={`flex-1 py-2 rounded-lg font-semibold transition-all ${isLogin ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'
-                            }`}
-                    >
-                        <LogIn className="inline mr-2" size={18} />
-                        Login
-                    </button>
-                    <button
-                        onClick={() => setIsLogin(false)}
-                        className={`flex-1 py-2 rounded-lg font-semibold transition-all ${!isLogin ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'
-                            }`}
-                    >
-                        <UserPlus className="inline mr-2" size={18} />
-                        Sign Up
-                    </button>
+                {/* Footer Footer */}
+                <div className="mt-12 text-center">
+                    <p className="text-[10px] font-black text-slate-600 tracking-[0.5em] uppercase">
+                        End-to-End Career Intelligence Encryption Active
+                    </p>
                 </div>
-
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    {!isLogin && (
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-                            <input
-                                type="text"
-                                className="input-field"
-                                value={formData.full_name}
-                                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                                required={!isLogin}
-                            />
-                        </div>
-                    )}
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                        <input
-                            type="email"
-                            className="input-field"
-                            value={formData.email}
-                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            required
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
-                        <input
-                            type="password"
-                            className="input-field"
-                            value={formData.password}
-                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                            required
-                        />
-                    </div>
-
-                    {error && (
-                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                            {error}
-                        </div>
-                    )}
-
-                    <button type="submit" className="btn-primary w-full" disabled={loading}>
-                        {loading ? 'Processing...' : isLogin ? 'Login' : 'Create Account'}
-                    </button>
-                </form>
             </div>
         </div>
     );

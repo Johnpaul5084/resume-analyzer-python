@@ -38,86 +38,116 @@ export default function Dashboard() {
     };
 
     return (
-        <div className="min-h-screen p-8">
+        <div className="min-h-screen p-8 bg-slate-950 text-slate-100">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
-                <div className="flex justify-between items-center mb-8">
+                <div className="flex justify-between items-center mb-12">
                     <div>
-                        <h1 className="text-4xl font-bold text-gray-800 mb-2">IRIS: Resume Intelligence</h1>
-                        <p className="text-gray-600">Advanced AI-Powered Role Fit & Semantic Analysis Engine</p>
+                        <h1 className="text-5xl font-black bg-gradient-to-r from-white via-indigo-200 to-slate-500 bg-clip-text text-transparent mb-2">
+                            AI Intelligence Suite
+                        </h1>
+                        <div className="flex items-center gap-3">
+                            <span className="h-1 w-12 bg-indigo-500 rounded-full"></span>
+                            <p className="text-slate-400 font-medium tracking-widest uppercase text-xs">Command Center</p>
+                        </div>
                     </div>
-                    <button onClick={handleLogout} className="btn-secondary flex items-center gap-2">
-                        <LogOut size={18} />
-                        Logout
+                    <button onClick={handleLogout} className="btn-secondary group flex items-center gap-2 px-4 py-2 text-sm">
+                        <LogOut size={16} className="group-hover:translate-x-1 transition-transform" />
+                        Disconnect
                     </button>
                 </div>
 
-                {/* Upload Card */}
-                <div className="card mb-8 bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:shadow-2xl cursor-pointer"
-                    onClick={() => navigate('/upload')}>
-                    <div className="flex items-center gap-4">
-                        <div className="bg-white/20 p-4 rounded-lg">
-                            <Upload size={32} />
-                        </div>
-                        <div>
-                            <h2 className="text-2xl font-bold mb-1">Upload New Resume</h2>
-                            <p className="text-blue-100">Get instant ATS score and AI-powered feedback</p>
-                        </div>
+                <div className="space-y-12">
+                    {/* Header / Intro */}
+                    <div className="relative">
+                        <div className="absolute -left-12 top-1/2 -translate-y-1/2 w-1 bg-indigo-600 h-16 rounded-full"></div>
+                        <h1 className="text-6xl font-black bg-gradient-to-r from-white via-indigo-200 to-slate-500 bg-clip-text text-transparent tracking-tighter mb-4">
+                            Command Center
+                        </h1>
+                        <p className="text-slate-400 font-medium tracking-wide max-w-2xl px-1 uppercase text-[10px] letter-spacing-[0.2em]">
+                            Synchronized Resume Intelligence & Neural Alignment Matrix
+                        </p>
                     </div>
-                </div>
 
-                {/* Resumes Grid */}
-                {loading ? (
-                    <div className="text-center py-12">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                        <p className="text-gray-600 mt-4">Loading resumes...</p>
-                    </div>
-                ) : resumes.length === 0 ? (
-                    <div className="card text-center py-12">
-                        <FileText size={48} className="mx-auto text-gray-400 mb-4" />
-                        <h3 className="text-xl font-semibold text-gray-700 mb-2">No resumes yet</h3>
-                        <p className="text-gray-600">Upload your first resume to get started!</p>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {resumes.map((resume) => (
-                            <div
-                                key={resume.id}
-                                className="card cursor-pointer hover:scale-105 transition-transform"
-                                onClick={() => navigate(`/resume/${resume.id}`)}
-                            >
-                                <div className="flex items-start justify-between mb-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="bg-blue-100 p-3 rounded-lg">
-                                            <FileText className="text-blue-600" size={24} />
-                                        </div>
-                                        <div>
-                                            <h3 className="font-semibold text-gray-800">{resume.title}</h3>
-                                            <p className="text-sm text-gray-500">{resume.file_type?.toUpperCase()}</p>
-                                        </div>
-                                    </div>
+                    {/* Upload Action */}
+                    <div className="glass-card p-1 border border-white/5 overflow-hidden cursor-pointer group hover:scale-[1.005] transition-all duration-500"
+                        onClick={() => navigate('/upload')}>
+                        <div className="bg-gradient-to-r from-indigo-600/10 via-blue-600/10 to-transparent p-10 rounded-2xl flex items-center justify-between">
+                            <div className="flex items-center gap-8">
+                                <div className="bg-indigo-600 p-6 rounded-2xl shadow-[0_0_30px_rgba(79,70,229,0.3)] group-hover:rotate-6 transition-transform">
+                                    <Upload size={36} className="text-white" />
                                 </div>
-
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-sm text-gray-600 mb-1">ATS Score</p>
-                                        <div className="flex items-center gap-2">
-                                            <span className={`score-badge ${getScoreColor(resume.ats_score)}`}>
-                                                {resume.ats_score?.toFixed(1) || 0}%
-                                            </span>
-                                            <TrendingUp size={16} className="text-green-600" />
-                                        </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="text-xs text-gray-500">
-                                            {new Date(resume.created_at).toLocaleDateString()}
-                                        </p>
-                                    </div>
+                                <div>
+                                    <h2 className="text-3xl font-black text-white mb-2">Initialize Profile Analysis</h2>
+                                    <p className="text-slate-400 text-sm font-medium tracking-wide">Ready for deep semantic scanning and role alignment.</p>
                                 </div>
                             </div>
-                        ))}
+                        </div>
                     </div>
-                )}
+
+                    {/* Resume Feed */}
+                    <div className="space-y-8">
+                        <div className="flex items-center gap-4">
+                            <h2 className="text-xs font-black uppercase tracking-[0.3em] text-slate-500">Neural History Feed</h2>
+                            <div className="h-px flex-1 bg-white/5 font-bold tracking-widest text-[10px] text-slate-800">---------------------------------</div>
+                        </div>
+
+                        {loading ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                {[1, 2, 3].map(i => (
+                                    <div key={i} className="glass-card h-64 animate-pulse-slow"></div>
+                                ))}
+                            </div>
+                        ) : resumes.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                {resumes.map((resume) => (
+                                    <div
+                                        key={resume.id}
+                                        className="glass-card p-8 cursor-pointer group hover:border-indigo-500/50 transition-all duration-500 flex flex-col h-full bg-white/5 border border-white/5 backdrop-blur-sm"
+                                        onClick={() => navigate(`/resume/${resume.id}`)}
+                                    >
+                                        <div className="flex justify-between items-start mb-10">
+                                            <div className="bg-white/5 p-4 rounded-2xl border border-white/5 group-hover:bg-indigo-600/20 group-hover:border-indigo-500/30 transition-all">
+                                                <FileText className="text-slate-400 group-hover:text-indigo-400" size={28} />
+                                            </div>
+                                            {resume.ats_score && (
+                                                <div className="text-right">
+                                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-tighter mb-1">ATS Intel</p>
+                                                    <span className={`text-2xl font-black ${resume.ats_score > 70 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                                                        {resume.ats_score.toFixed(0)}%
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <h3 className="text-xl font-black text-white mb-3 group-hover:text-indigo-400 transition-colors line-clamp-1">
+                                            {resume.title}
+                                        </h3>
+                                        <div className="mt-auto pt-6 border-t border-white/5 flex items-center justify-between">
+                                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                                                v1.{new Date(resume.created_at).getDate()}
+                                            </span>
+                                            <span className="text-xs font-black text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                EXECUTE ANALYZE →
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="glass-card p-20 text-center">
+                                <div className="bg-white/5 w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-white/5 text-slate-600">
+                                    <FileText size={40} />
+                                </div>
+                                <h3 className="text-2xl font-black text-white mb-2 tracking-tight">No Active Profiles Detected</h3>
+                                <p className="text-slate-500 text-sm max-w-sm mx-auto font-medium">Upload your first resume to initialize the neural career intelligence suite.</p>
+                                <button onClick={() => navigate('/upload')} className="btn-primary mt-8 px-10 py-5 text-xs tracking-widest">
+                                    INITIATE SYSTEM
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
             </div>
         </div>
     );

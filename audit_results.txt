@@ -1,0 +1,13 @@
+
+≡ƒÜÇ IRIS AI - Pre-Deployment Intelligence Audit
+============================================================
+System Health                            [92mPASS      [0m Latency: 0.004s
+User Registration                        [92mPASS      [0m Latency: 1.519s
+Auth: Login                              [92mPASS      [0m Latency: 0.714s
+Mentor Bot: Chat                         [92mPASS      [0m Latency: 0.718s
+Mentor Bot: RAG Insight                  [92mPASS      [0m Latency: 1.189s
+AI Rewriter: JD Transform                [92mPASS      [0m Latency: 0.859s
+Career Intel: Strategy                   [92mPASS      [0m Latency: 0.615s
+============================================================
+Γ£à Audit Complete.
+

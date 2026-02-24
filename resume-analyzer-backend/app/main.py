@@ -1,7 +1,19 @@
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Force load .env from backend root (one level up from app/)
+env_path = Path(__file__).resolve().parent.parent / ".env"
+load_dotenv(dotenv_path=env_path)
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.api import api_router
 from app.core.config import settings
+from app.middleware.security import AISecurityMiddleware
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 from app.db.session import engine
 from app.models import all_models # Ensure models are registered
 
@@ -19,16 +31,57 @@ except Exception as e:
 finally:
     db.close()
 
+from app.career_engine.rag_engine import build_index
+
+limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(
-    title=settings.PROJECT_NAME,
+    title="AI Resume Analyzer",
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
-    description="Backend for Resume Analyzer with ATS Scoring, Job Matching, and AI Rewriting."
+    description="AI Resume Analyzer - Intelligent Resume & Career Intelligence Platform."
 )
 
+# System Diagnostic: Ensure AI Engine has a pulse
+if not os.getenv("GEMINI_API_KEY"):
+    raise RuntimeError("❌ AI Neural Error: GEMINI_API_KEY not configured properly in .env")
+else:
+    print("✅ AI Neural Link: GEMINI_API_KEY Loaded")
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Global Security Layer
+app.add_middleware(AISecurityMiddleware)
+
+import threading
+
+@app.on_event("startup")
+def startup_event():
+    # Build RAG Index & Preload Models in Background to avoid blocking Cold Start
+    def preload_all():
+        print("AI System: Initializing RAG Engine & NLP Models in background...")
+        try:
+            # 1. RAG Index (loads SentenceTransformer)
+            build_index()
+            # 2. NLP Parser (loads spaCy)
+            from app.services.ai_parser_service import AIParserService
+            AIParserService.get_nlp()
+            print("AI System: Neural Link Synchronized.")
+        except Exception as e:
+            print(f"AI System: Preload warning: {e}")
+
+    threading.Thread(target=preload_all, daemon=True).start()
+
 # Set all CORS enabled origins
+# Include common Vite ports (5173) and local variants
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+] + settings.BACKEND_CORS_ORIGINS
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

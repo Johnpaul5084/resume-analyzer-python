@@ -8,7 +8,7 @@ from app.services.ocr_service import OCRService
 
 logger = logging.getLogger(__name__)
 
-class ParserService:
+class AIRawParser:
     @staticmethod
     async def extract_text(file: UploadFile) -> str:
         content = await file.read()

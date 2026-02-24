@@ -3,7 +3,7 @@ from app.career_engine.domain_database import CAREER_DOMAINS
 
 class CareerPredictor:
     """
-    IRIS Career Prediction Engine
+    AI Career Prediction Engine
     Analyzes branch, skills, and interests to suggest career domains.
     """
 

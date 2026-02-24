@@ -2,7 +2,7 @@ from fastapi import APIRouter
 
 from app.api.endpoints import (
     auth, users, resumes, jobs, 
-    advanced_features, career_guru, career_intelligence
+    advanced_features, mentor, ai_rewrite
 )
 
 api_router = APIRouter()
@@ -11,5 +11,5 @@ api_router.include_router(users.router, prefix="/users", tags=["users"])
 api_router.include_router(resumes.router, prefix="/resumes", tags=["resumes"])
 api_router.include_router(jobs.router, prefix="/jobs", tags=["jobs"])
 api_router.include_router(advanced_features.router, prefix="/advanced", tags=["🚀 Advanced Features"])
-api_router.include_router(career_guru.router, prefix="/career-guru", tags=["🤖 Career Guru"])
-api_router.include_router(career_intelligence.router, prefix="/career-intel", tags=["🎯 Career Intelligence"])
+api_router.include_router(mentor.router, prefix="/ai-mentor", tags=["🤖 AI Career Mentor"])
+api_router.include_router(ai_rewrite.router, prefix="/ai-rewrite", tags=["✍️ AI Rewriter"])

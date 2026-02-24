@@ -5,7 +5,8 @@ from app.api import dependencies as deps
 from app.db.session import get_db
 from app.models.all_models import Resume, User
 from app.schemas.all_schemas import ResumeDetailedAnalysis, ResumeInDBBase, ResumeCreate
-from app.services.parser_service import ParserService
+from app.services.ai_parser_service import AIParserService
+from app.services.file_parser_service import AIRawParser
 from app.services.ats_scoring_service import ATSScoringService
 import os
 
@@ -100,9 +101,25 @@ async def upload_resume(
     """
     Upload and analyze resume. AI features run in background for real-time responsiveness.
     """
+    # 0. Security Validation
+    ALLOWED_EXTENSIONS = {"pdf", "docx"}
+    MAX_FILE_SIZE = 5 * 1024 * 1024 # 5MB
+    
+    file_ext = file.filename.split('.')[-1].lower()
+    if file_ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(status_code=400, detail="Security: Invalid file format. Only PDF and DOCX permitted.")
+        
+    # Read content to check size
+    content = await file.read()
+    if len(content) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=413, detail="Security: Document too large (Limit 5MB).")
+    
+    # Seek back to start for parser
+    await file.seek(0)
+
     # 1. Parse File
     try:
-        extracted_text = await ParserService.extract_text(file)
+        extracted_text = await AIRawParser.extract_text(file)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
         
@@ -110,9 +127,8 @@ async def upload_resume(
          raise HTTPException(status_code=400, detail="Could not extract text from file.")
 
     # 2. Analyze Resume (ATS Score - Semantic)
-    # Phoenix Upgrade: Awaiting async high-accuracy analysis
     analysis_result = await ATSScoringService.calculate_score(extracted_text, job_description)
-    parsed_sections = ParserService.extract_sections(extracted_text)
+    parsed_sections = AIRawParser.extract_sections(extracted_text)
     
     # 3. Save Initial Data to DB
     file_location = f"uploads/{current_user.id}_{file.filename}"
@@ -208,21 +224,28 @@ def get_my_resumes(
 from app.schemas.all_schemas import RewriteRequest, JobPredictionRequest, ValidateFitRequest
 from fastapi import Body
 
+from fastapi import Body, Request
+
 @router.post("/rewrite")
 async def rewrite_resume_section(
-    request: RewriteRequest,
+    request: Request,
+    rewrite_req: RewriteRequest = Body(...),
 ):
     """
     Rewrite a resume section using AI (Gemini) for MNC standards.
     """
-    from app.services.ai_rewrite_service import AIRewriteService
-    # Ensure all arguments are passed correctly from the request object
-    return await AIRewriteService.rewrite_section(
-        text=request.text, 
-        section_type=request.section_type, 
-        target_role=request.target_role,
-        company_type=request.company_type
-    )
+    from app.main import limiter
+    # Throttling to protect Gemini QPS
+    @limiter.limit("5/minute")
+    async def _rewrite(request, rewrite_req):
+        from app.services.ai_rewrite_service import AIRewriteService
+        return await AIRewriteService.rewrite_section(
+            text=rewrite_req.text, 
+            section_type=rewrite_req.section_type, 
+            target_role=rewrite_req.target_role,
+            company_type=rewrite_req.company_type
+        )
+    return await _rewrite(request, rewrite_req)
 
 @router.post("/predict-job")
 async def predict_job_role(

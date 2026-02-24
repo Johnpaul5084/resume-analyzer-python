@@ -3,7 +3,7 @@ from typing import Optional, List
 import os
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "Resume Analyzer AI"
+    PROJECT_NAME: str = "AI Resume Analyzer"
     API_V1_STR: str = "/api/v1"
     
     # DATABASE
@@ -72,7 +72,5 @@ class Settings(BaseSettings):
 settings = Settings()
 
 # Debug: Log configuration status (Do not print the actual key!)
-if settings.GEMINI_API_KEY:
-    print("✅ GEMINI_API_KEY detected in environment.")
-else:
-    print("❌ GEMINI_API_KEY NOT detected in environment.")
+# if settings.GEMINI_API_KEY:
+#     print("✅ GEMINI_API_KEY detected in environment.", flush=True)

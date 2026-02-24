@@ -13,7 +13,7 @@ class RoadmapAIGenerator:
         model = genai.GenerativeModel("gemini-1.5-flash")
         
         prompt = f"""
-        Act as a Senior Career Mentor from a top IIT/IIIT. 
+        Act as the 'AI Career Mentor'. 
         Create a high-impact, 6-month career roadmap for a student aiming to become a {role}.
         
         CURRENT STATE:

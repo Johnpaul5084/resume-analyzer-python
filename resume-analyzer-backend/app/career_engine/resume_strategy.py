@@ -3,7 +3,7 @@ from typing import Dict, Any
 
 class ResumeStrategy:
     """
-    IRIS Career & Resume Strategy Guide
+    AI Career & Resume Strategy Guide
     Provides role-specific guidance for FAANG and MNCs.
     """
 

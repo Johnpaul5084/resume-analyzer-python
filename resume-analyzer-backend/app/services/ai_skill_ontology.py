@@ -3,7 +3,7 @@ from typing import Dict, List, Set
 
 class SkillOntology:
     """
-    IRIS Skill Ontology & Taxonomy
+    AI Skill Ontology & Taxonomy
     Definitions of skill clusters for semantic matching.
     """
     

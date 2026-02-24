@@ -3,7 +3,7 @@ from typing import List, Dict
 
 class SkillGraph:
     """
-    IRIS Skill Graph Logic
+    AI Skill Graph Logic
     Visualizes skill dependencies using NetworkX.
     """
 

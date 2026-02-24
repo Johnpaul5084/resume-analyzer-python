@@ -14,7 +14,7 @@ if settings.GEMINI_API_KEY:
 class AIRewriteService:
     
     @staticmethod
-    async def rewrite_section(text: str, section_type: str, target_role: str = "General", company_type: str = "MNC", job_description: str = None) -> str:
+    async def rewrite_section(text: str, section_type: str, target_role: str = "General", company_type: str = "MNC", job_description: str = None, mode: str = "ATS") -> str:
         """
         Rewrites resume content using Gemini 1.5 Flash.
         Produces professional, standard-formatted text ready for direct use.
@@ -29,6 +29,7 @@ class AIRewriteService:
             if job_description:
                 prompt = f"""
                 Act as a specialized MNC recruiter. Rewrite the following resume content to perfectly match this Job Description.
+                MODE: {mode}
                 
                 JOB DESCRIPTION:
                 {job_description[:1500]}
@@ -47,6 +48,7 @@ class AIRewriteService:
             else:
                 prompt = f"""
                 Act as a high-end recruiter for top global MNCs. Rewrite the following resume for a {target_role} role.
+                MODE: {mode}
                 
                 RESUME CONTENT:
                 {text[:4000]}
@@ -69,6 +71,45 @@ class AIRewriteService:
         except Exception as e:
             logger.error(f"AI Rewrite Error: {e}")
             return f"Error during AI rewrite: {str(e)}"
+
+    @staticmethod
+    async def rewrite_resume(resume_text: str, job_description: str, mode: str = "ATS") -> str:
+        """
+        AI JD → ATS Resume Transformer
+        Aligns resume content with a specific Job Description.
+        """
+        return await AIRewriteService.rewrite_section(
+            text=resume_text,
+            section_type="Entire Resume",
+            job_description=job_description,
+            mode=mode
+        )
+
+    @staticmethod
+    async def grammar_enhance(text: str) -> str:
+        """
+        AI Grammar & Clarity Enhancer
+        Polishes resume text while maintaining original meaning.
+        """
+        if not settings.GEMINI_API_KEY:
+             return "AI Rewrite Service not configured."
+
+        try:
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            prompt = f"""
+            Polish the following resume text for grammar, clarity, and impact.
+            Keep the original meaning but make it sound more professional and standard.
+            
+            TEXT:
+            {text[:3000]}
+            
+            OUTPUT: Return only the polished, professional text. No conversational filler.
+            """
+            response = model.generate_content(prompt)
+            return response.text.strip()
+        except Exception as e:
+            logger.error(f"Grammar Enhancement Error: {e}")
+            return f"Error: {str(e)}"
 
     @staticmethod
     async def generate_summary(resume_text: str, target_role: str) -> str:

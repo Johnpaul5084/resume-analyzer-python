@@ -2,7 +2,7 @@ from typing import List, Dict
 
 class RoadmapGenerator:
     """
-    IRIS Career Roadmap Generator
+    AI Career Roadmap Generator
     Generates time-bound milestones for career goals.
     """
 

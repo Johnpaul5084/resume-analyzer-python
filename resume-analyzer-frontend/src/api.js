@@ -5,23 +5,20 @@ import axios from 'axios';
 // Example: https://your-backend.railway.app
 const getApiBaseUrl = () => {
     let envUrl = import.meta.env.VITE_API_URL;
-    if (envUrl) {
-        // Remove trailing slash if present
-        envUrl = envUrl.replace(/\/$/, "");
 
-        // Ensure the URL starts with https:// if it's just a domain
+    // If VITE_API_URL is set (Production)
+    if (envUrl) {
+        envUrl = envUrl.replace(/\/$/, "");
         if (!envUrl.startsWith('http')) {
             envUrl = `https://${envUrl}`;
         }
-
-        // Append /api/v1 if not already present
-        const baseUrl = envUrl.endsWith('/api/v1') ? envUrl : `${envUrl}/api/v1`;
-        console.log("Using API Base URL:", baseUrl);
-        return baseUrl;
+        return envUrl.endsWith('/api/v1') ? envUrl : `${envUrl}/api/v1`;
     }
-    // Default to localhost for development
-    console.log("Using local API (VITE_API_URL not set)");
-    return 'http://127.0.0.1:8000/api/v1';
+
+    // Local Development: Use Vite Proxy
+    // Vite config redirects /api to backend (http://localhost:8080)
+    console.log("AI Resume Analyzer Frontend: Using Proxy connection.");
+    return '/api/v1';
 };
 
 const api = axios.create({
@@ -39,6 +36,18 @@ api.interceptors.request.use((config) => {
     }
     return config;
 });
+
+// AI System Security Interceptor
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response && error.response.status === 429) {
+            // Rate Limit Triggered
+            alert("Security: Neural link throttled. Please wait a minute before sending more AI requests.");
+        }
+        return Promise.reject(error);
+    }
+);
 
 // Auth API
 export const authAPI = {
@@ -69,18 +78,20 @@ export const jobAPI = {
     getRecommendations: (resumeId) => api.get(`/jobs/recommendations/${resumeId}`),
 };
 
-// Career Guru API
-export const careerGuruAPI = {
-    chat: (question, resumeId = null) => api.post('/career-guru/chat', { question, resume_id: resumeId }),
-    getRoadmap: (targetRole, resumeId) => api.post('/career-guru/roadmap', { target_role: targetRole, resume_id: resumeId }),
+// AI Mentor API (Unified)
+export const mentorAPI = {
+    chat: (question, resumeId = null) => api.post('/ai-mentor/chat', { question, resume_id: resumeId }),
+    getInsight: (resumeText, skills) => api.post('/ai-mentor/insight', { resume_text: resumeText, skills: skills }),
+    predict: (profile) => api.post('/ai-mentor/predict', profile),
+    getStrategy: (tier) => api.get(`/ai-mentor/strategy/${tier}`),
 };
 
-// Career Intelligence API
-export const careerIntelAPI = {
-    predict: (profile) => api.post('/career-intel/predict-career', profile),
-    getRoadmap: (targetRole, months = 6) => api.post('/career-intel/generate-roadmap', { target_role: targetRole, timeline_months: months }),
-    getStrategy: (tier) => api.get(`/career-intel/resume-strategy/${tier}`),
-    getMentorInsight: (resumeText, skills) => api.post('/career-intel/mentor-insight', { resume_text: resumeText, skills: skills }),
+// AI Rewrite API (Advanced Transformer)
+export const rewriteAPI = {
+    transform: (resumeText, jobDescription, mode = 'ATS') =>
+        api.post('/ai-rewrite/transform', { resume_text: resumeText, job_description: jobDescription, mode }),
+    enhanceGrammar: (text) =>
+        api.post('/ai-rewrite/enhance-grammar', { text }),
 };
 
 export default api;

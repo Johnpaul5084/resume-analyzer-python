@@ -1,82 +1,64 @@
-from app.services.iris_skill_ontology import SkillOntology
-try:
-    from sentence_transformers import SentenceTransformer, util
-    import torch
-    SEMANTIC_AVAILABLE = True
-except ImportError:
-    SEMANTIC_AVAILABLE = False
-
+from app.services.ai_skill_ontology import SkillOntology
+from app.core.ai_model import AIModelManager
+from sentence_transformers import util
+import re
+import json
+import os
 import logging
 from typing import Dict, List, Any
 
 logger = logging.getLogger(__name__)
 
-class IRISScoringEngine:
+class AIScoringEngine:
     """
-    IRIS Multi-Metric Intelligence Engine
+    AI Resume Analyzer Multi-Metric Intelligence Engine
     IIIT/IIT Level Implementation: Weighted multi-stage evaluation.
     """
     
-    _model = None
-
-    @classmethod
-    def get_model(cls):
-        if not SEMANTIC_AVAILABLE:
-            return None
-            
-        if cls._model is None:
-            try:
-                cls._model = SentenceTransformer('all-MiniLM-L6-v2')
-                logger.info("IRIS Semantic Model loaded.")
-            except Exception as e:
-                logger.error(f"Failed to load semantic model: {e}")
-                return None
-        return cls._model
-
     @staticmethod
     def calculate_comprehensive_score(resume_text: str, parsed_data: Dict[str, Any], target_role: str = "Software Engineer") -> Dict[str, Any]:
         """
         IIIT-Level Engine:
-        Final Score = 0.35*Semantic + 0.25*SkillDepth + 0.20*Impact + 0.20*Structure
+        Final Score = 0.35*semantic_similarity + 0.25*skill_coverage + 0.20*experience_depth + 0.20*ats_format_score
         """
-        # 1. Semantic Fit (Sentence Transformers)
-        template = IRISScoringEngine.get_role_template(target_role)
-        semantic_score = IRISScoringEngine.calculate_semantic_score(resume_text, template)
+        # 1. Semantic Similarity (Sentence Transformers)
+        template = AIScoringEngine.get_role_template(target_role)
+        semantic_similarity = AIScoringEngine.calculate_semantic_score(resume_text, template)
         
-        # 2. Skill Depth (Ontology Match)
+        # 2. Skill Coverage (Ontology Match)
         user_skills = parsed_data.get("skills", [])
         primary_cluster = SkillOntology.identify_primary_cluster(user_skills)
-        skill_score = min((len(user_skills) / 12) * 100, 100)
+        skill_coverage = min((len(user_skills) / 12) * 100, 100)
         gap_analysis = SkillOntology.get_missing_skills(primary_cluster, user_skills)
         
-        # 3. Impact Analysis (Quantifiable Metrics)
+        # 3. Experience Depth (Impact & Context)
         metrics_found = len(re.findall(r'\d+%', resume_text)) + len(re.findall(r'\$\d+', resume_text))
-        impact_score = min((metrics_found / 5) * 100, 100)
+        experience_depth = min((metrics_found / 5) * 100, 100)
         
-        # 4. Structural Quality
-        structure_score = 0
-        if parsed_data.get("personal_info", {}).get("email"): structure_score += 25
-        if user_skills: structure_score += 25
-        if len(resume_text.split()) > 200: structure_score += 50
+        # 4. ATS Format Score (Structural Quality)
+        ats_format_score = 0
+        if parsed_data.get("personal_info", {}).get("email"): ats_format_score += 25
+        if user_skills: ats_format_score += 25
+        if len(resume_text.split()) > 200: ats_format_score += 50
         
         # Final Weighted Aggregation
         final_score = (
-            (semantic_score * 0.35) +
-            (skill_score * 0.25) +
-            (impact_score * 0.20) +
-            (structure_score * 0.20)
+            (semantic_similarity * 0.35) +
+            (skill_coverage * 0.25) +
+            (experience_depth * 0.20) +
+            (ats_format_score * 0.20)
         )
         
         return {
             "ats_score": round(final_score, 2),
             "breakdown": {
-                "semantic_match": round(semantic_score, 2),
-                "skill_depth": round(skill_score, 2),
-                "impact_quantification": round(impact_score, 2),
-                "structure_quality": round(structure_score, 2),
+                "semantic_similarity": round(semantic_similarity, 2),
+                "skill_coverage": round(skill_coverage, 2),
+                "experience_depth": round(experience_depth, 2),
+                "ats_format_score": round(ats_format_score, 2),
                 "market_readiness": 90 if final_score > 80 else 75
             },
-            "explainable_ai": IRISScoringEngine._generate_explanation(final_score, primary_cluster, gap_analysis, metrics_found)
+            "explainable_ai": AIScoringEngine._generate_explanation(final_score, primary_cluster, gap_analysis, metrics_found)
         }
 
     @staticmethod
@@ -97,17 +79,28 @@ class IRISScoringEngine:
 
     @staticmethod
     def calculate_semantic_score(resume_text: str, target_template: str) -> float:
-        model = IRISScoringEngine.get_model()
-        if not model: return 72.0
         try:
+            model = AIModelManager.get_model()
             resume_emb = model.encode(resume_text, convert_to_tensor=True)
             template_emb = model.encode(target_template, convert_to_tensor=True)
             cos_sim = util.pytorch_cos_sim(resume_emb, template_emb)
             return round(min(max(cos_sim.item() * 140, 0), 100), 2)
-        except: return 70.0
+        except Exception as e:
+            logger.error(f"Semantic scoring error: {e}")
+            return 70.0
 
     @staticmethod
     def get_role_template(role: str) -> str:
+        db_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "career_engine", "role_database.json")
+        try:
+            with open(db_path, encoding='utf-8') as f:
+                role_db = json.load(f)
+            role_data = role_db.get(role)
+            if role_data:
+                return f"{role}. {role_data.get('description', '')} Mandatory Skills: {', '.join(role_data.get('mandatory_skills', []))}."
+        except Exception as e:
+            logger.warning(f"Failed to load role template for {role}: {e}")
+            
         templates = {
             "Software Engineer": "Backend development, algorithms, data structures, system design, microservices, cloud computing, unit testing.",
             "Data Scientist": "Machine learning, statistical modeling, data visualization, Python, SQL, deep learning, feature engineering.",

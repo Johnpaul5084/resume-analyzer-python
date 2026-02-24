@@ -1,4 +1,4 @@
-# 🚀 IRIS AI – Intelligent Resume & Career Intelligence Platform
+# 🚀 AI Resume Analyzer – Intelligent Resume & Career Intelligence Platform
 
 > From Resume Scoring to Career Intelligence Engineering
 > Built with FastAPI, Semantic NLP, Vector Search, and Explainable AI
@@ -7,7 +7,7 @@
 
 # 🌍 Vision
 
-IRIS AI is not just a Resume Analyzer.
+AI Resume Analyzer is not just a Resume Analyzer.
 
 It is a **Semantic Resume Intelligence & Career Guidance Platform** designed to bridge the awareness gap for Tier-2/3/4 college students across IT, Core, and Non-IT domains.
 
@@ -29,7 +29,7 @@ Inspired by insights from **AI Impact Summit 2026 (Delhi)**.
 
 ## 1️⃣ Semantic ATS 2.0
 
-Unlike traditional keyword-based ATS systems, IRIS uses:
+Unlike traditional keyword-based ATS systems, AI Resume Analyzer uses:
 
 * Sentence-Transformers (MiniLM)
 * Cosine Similarity Matching
@@ -43,7 +43,7 @@ Unlike traditional keyword-based ATS systems, IRIS uses:
 
 ---
 
-## 2️⃣ AI Career Mentor (IRIS Guru)
+## 2️⃣ AI Career Mentor (AI Career Guru)
 
 A conversational AI mentor that:
 
@@ -217,19 +217,19 @@ Bridges real-world recruitment systems with AI-based personalization.
 
 100% Free Production Stack:
 
-* Frontend → Vercel
-* Backend → Render
-* Database → Supabase
-* Vector Store → FAISS (local index)
+* **Frontend**: Vercel or Render Static Sites
+* **Backend**: Render (Web Service)
+* **Database**: Supabase (PostgreSQL)
+* **Vector Store**: FAISS (Local Index)
 
-No credit card required.
+For detailed Render deployment steps, see [RENDER_INSTRUCTIONS.md](./RENDER_INSTRUCTIONS.md).
 
 ---
 
 # 🔐 Security & Production Readiness
 
 * JWT authentication
-* Password hashing (bcrypt)
+* Password hashing (Argon2)
 * ORM-based SQL injection protection
 * File validation
 * CORS configuration
@@ -263,7 +263,7 @@ Key Highlights:
 
 # 🏆 Project Positioning
 
-IRIS AI transforms resume evaluation from:
+AI Resume Analyzer transforms resume evaluation from:
 
 “Keyword Matching Tool”
 
