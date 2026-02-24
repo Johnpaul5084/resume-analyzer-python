@@ -111,12 +111,13 @@ export default function Login() {
                                 AI RESUME ANALYZER
                             </h1>
                             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full">
-                                <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${backendStatus === 'online' ? 'bg-emerald-500' :
-                                    backendStatus === 'offline' ? 'bg-rose-500' :
-                                        backendStatus === 'misconfigured' ? 'bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.5)]' : 'bg-slate-500'
+                                <span className={`w-1.5 h-1.5 rounded-full ${backendStatus === 'online' ? 'bg-emerald-500 animate-pulse' :
+                                        backendStatus === 'offline' ? 'bg-rose-500' :
+                                            backendStatus === 'misconfigured' ? 'bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.5)]' :
+                                                'bg-indigo-500 animate-ping'
                                     }`}></span>
                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">
-                                    System Status: {backendStatus.toUpperCase()}
+                                    System Status: {backendStatus === 'unknown' ? 'INITIALIZING...' : backendStatus.toUpperCase()}
                                     {backendStatus !== 'online' && (
                                         <span className="ml-2 text-slate-500 opacity-70">
                                             (Target: {getApiBaseUrl()})
