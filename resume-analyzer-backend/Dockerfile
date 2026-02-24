@@ -2,9 +2,11 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-# Install system dependencies (needed for spacy and other heavy libs)
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
+    tesseract-ocr \
+    poppler-utils \
     && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies

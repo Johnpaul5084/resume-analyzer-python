@@ -41,27 +41,28 @@ app.add_middleware(AISecurityMiddleware)
 
 @app.on_event("startup")
 def startup_event():
-    # 1. Database Initialization
-    try:
-        print("AI System: Verifying Neural Database...")
-        all_models.Base.metadata.create_all(bind=engine)
-        
-        from app.db.session import SessionLocal
-        from app.db.init_db import init_db
-        db = SessionLocal()
-        try:
-            init_db(db)
-        finally:
-            db.close()
-        print("✅ AI Database: Synchronized.")
-    except Exception as e:
-        print(f"❌ AI Database: Sync Failed: {e}")
-
-    # 2. Build RAG Index & Preload Models in Background
+    # Build RAG Index & Preload Models in Background to avoid blocking Cold Start
     def preload_all():
+        # 1. Database Initialization (Moved to background to avoid blocking Startup)
+        try:
+            print("AI System: Verifying Neural Database in background...")
+            all_models.Base.metadata.create_all(bind=engine)
+            
+            from app.db.session import SessionLocal
+            from app.db.init_db import init_db
+            db = SessionLocal()
+            try:
+                init_db(db)
+            finally:
+                db.close()
+            print("✅ AI Database: Synchronized.")
+        except Exception as e:
+            print(f"❌ AI Database: Sync Failed: {e}")
+
+        # 2. RAG Index & NLP Parser
         print("AI System: Initializing RAG Engine & NLP Models in background...")
         try:
-            # 1. RAG Index (loads SentenceTransformer)
+            # 1. RAG Index
             build_index()
             # 2. NLP Parser (loads spaCy)
             from app.services.ai_parser_service import AIParserService

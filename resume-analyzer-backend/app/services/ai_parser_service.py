@@ -1,4 +1,3 @@
-import spacy
 import re
 import logging
 from typing import Dict, List, Any
@@ -18,6 +17,7 @@ class AIParserService:
     def get_nlp(cls):
         if cls._nlp is None:
             try:
+                import spacy
                 cls._nlp = spacy.load("en_core_web_sm")
             except Exception as e:
                 logger.error(f"Failed to load spaCy model: {e}")
