@@ -1,2 +1,1 @@
-Status Code: 201
-Response: {"email":"user9923@test.com","full_name":"Test User","id":2,"is_active":true,"created_at":"2026-02-11T14:53:03"}
+Error: HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/v1/signup (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000002B970E53620>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))

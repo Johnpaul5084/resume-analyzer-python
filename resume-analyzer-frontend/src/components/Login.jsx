@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authAPI } from '../api';
-import { LogIn, UserPlus } from 'lucide-react';
+import { LogIn, UserPlus, AlertTriangle } from 'lucide-react';
 
 export default function Login() {
     const [isLogin, setIsLogin] = useState(true);
@@ -14,10 +14,27 @@ export default function Login() {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
+    const [backendStatus, setBackendStatus] = useState('unknown');
+
+    React.useEffect(() => {
+        const checkHealth = async () => {
+            try {
+                // Try checking health
+                const response = await fetch('/api/v1/healthz');
+                if (response.ok) setBackendStatus('online');
+                else setBackendStatus('error');
+            } catch (err) {
+                setBackendStatus('offline');
+            }
+        };
+        checkHealth();
+    }, []);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         setLoading(true);
+        console.log('AI System: Initiating sync...', { isLogin, email: formData.email });
 
         const email = formData.email.trim();
         const password = formData.password;
@@ -25,32 +42,33 @@ export default function Login() {
 
         try {
             if (isLogin) {
+                console.log('AI System: Authenticating neural link...');
                 const response = await authAPI.login(email, password);
                 localStorage.setItem('access_token', response.data.access_token);
+                console.log('AI System: Authentication successful.');
                 navigate('/dashboard');
             } else {
+                console.log('AI System: Committing new neural profile...');
                 await authAPI.signup({
                     email: email,
                     password: password,
                     full_name: full_name,
                 });
+                console.log('AI System: Profile created. Establishing link...');
                 // Auto login after signup
                 const loginResponse = await authAPI.login(email, password);
                 localStorage.setItem('access_token', loginResponse.data.access_token);
+                console.log('AI System: Link established.');
                 navigate('/dashboard');
             }
         } catch (err) {
-            console.error('Error during signup/login:', err);
-            if (err.response) {
-                // Server responded with error
-                setError(err.response?.data?.detail || JSON.stringify(err.response?.data) || 'Server error occurred');
-            } else if (err.request) {
-                // Request made but no response
-                setError('Cannot connect to server. Please ensure the backend is running and the API URL is correct.');
-            } else {
-                // Something else happened
-                setError(err.message || 'An error occurred');
-            }
+            console.error('AI System Error:', err);
+            const detail = err.response?.data?.detail;
+            const errorMsg = typeof detail === 'string' ? detail :
+                (Array.isArray(detail) ? detail[0]?.msg : null) ||
+                JSON.stringify(err.response?.data) ||
+                err.message || 'Unknown Neural Error';
+            setError(errorMsg);
         } finally {
             setLoading(false);
         }
@@ -71,20 +89,26 @@ export default function Login() {
                                 AI RESUME ANALYZER
                             </h1>
                             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full">
-                                <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse"></span>
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Career Intelligence Suite v4.2</span>
+                                <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${backendStatus === 'online' ? 'bg-emerald-500' :
+                                        backendStatus === 'offline' ? 'bg-rose-500' : 'bg-amber-500'
+                                    }`}></span>
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">
+                                    System Status: {backendStatus.toUpperCase()}
+                                </span>
                             </div>
                         </div>
 
                         {/* Switcher */}
                         <div className="grid grid-cols-2 p-1.5 bg-black/40 rounded-3xl mb-10 border border-white/5">
                             <button
+                                type="button"
                                 onClick={() => setIsLogin(true)}
                                 className={`py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 ${isLogin ? 'bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.1)]' : 'text-slate-500 hover:text-white'}`}
                             >
                                 Access
                             </button>
                             <button
+                                type="button"
                                 onClick={() => setIsLogin(false)}
                                 className={`py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 ${!isLogin ? 'bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.1)]' : 'text-slate-500 hover:text-white'}`}
                             >
