@@ -12,7 +12,8 @@ export const getApiBaseUrl = () => {
         if (!envUrl.startsWith('http')) {
             envUrl = `https://${envUrl}`;
         }
-        return envUrl.endsWith('/api/v1') ? envUrl : `${envUrl}/api/v1`;
+        const fullUrl = envUrl.endsWith('/api/v1') ? envUrl : `${envUrl}/api/v1`;
+        return fullUrl.replace(/\/$/, "");
     }
 
     // Local Development: Use Vite Proxy

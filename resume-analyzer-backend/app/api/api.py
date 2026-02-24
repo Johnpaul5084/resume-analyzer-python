@@ -13,3 +13,7 @@ api_router.include_router(jobs.router, prefix="/jobs", tags=["jobs"])
 api_router.include_router(advanced_features.router, prefix="/advanced", tags=["🚀 Advanced Features"])
 api_router.include_router(mentor.router, prefix="/ai-mentor", tags=["🤖 AI Career Mentor"])
 api_router.include_router(ai_rewrite.router, prefix="/ai-rewrite", tags=["✍️ AI Rewriter"])
+
+@api_router.get("/healthz")
+def api_health_check():
+    return {"status": "healthy", "scope": "api_v1"}
