@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { authAPI } from '../api';
+import { authAPI, getApiBaseUrl } from '../api';
 import { LogIn, UserPlus, AlertTriangle } from 'lucide-react';
 
 export default function Login() {
@@ -19,12 +19,21 @@ export default function Login() {
     React.useEffect(() => {
         const checkHealth = async () => {
             try {
-                // Try checking health
-                const response = await fetch('/api/v1/healthz');
-                if (response.ok) setBackendStatus('online');
-                else setBackendStatus('error');
+                const baseUrl = getApiBaseUrl();
+                const response = await fetch(`${baseUrl}/healthz`);
+
+                // If it's the SPA index.html, the content-type will be text/html
+                const contentType = response.headers.get('content-type');
+                if (response.ok && contentType && contentType.includes('application/json')) {
+                    setBackendStatus('online');
+                } else {
+                    // It returned 200 but it wasn't JSON (likely Vercel index.html rewrite)
+                    setBackendStatus('offline');
+                    console.warn('AI System: Backend reached but returned non-JSON. Potential proxy/rewrite issue.', { contentType });
+                }
             } catch (err) {
                 setBackendStatus('offline');
+                console.error('AI System: Backend connection failed.', err);
             }
         };
         checkHealth();
@@ -90,7 +99,7 @@ export default function Login() {
                             </h1>
                             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full">
                                 <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${backendStatus === 'online' ? 'bg-emerald-500' :
-                                        backendStatus === 'offline' ? 'bg-rose-500' : 'bg-amber-500'
+                                    backendStatus === 'offline' ? 'bg-rose-500' : 'bg-amber-500'
                                     }`}></span>
                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">
                                     System Status: {backendStatus.toUpperCase()}
