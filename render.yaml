@@ -2,10 +2,9 @@ services:
   # Backend FastAPI Service
   - type: web
     name: resume-analyzer-backend
-    env: python
+    env: docker
     rootDir: resume-analyzer-backend
-    buildCommand: pip install --upgrade pip setuptools wheel && pip install -r requirements.txt
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    dockerFilePath: Dockerfile
     envVars:
       - key: DATABASE_URL
         sync: false
