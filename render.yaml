@@ -21,6 +21,8 @@ services:
         value: HS256
       - key: ACCESS_TOKEN_EXPIRE_MINUTES
         value: "1440"
+      - key: PYTHON_VERSION
+        value: "3.10.13"
       - key: PORT
         value: "8080"
 

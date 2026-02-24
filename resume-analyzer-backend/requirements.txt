@@ -15,7 +15,7 @@ google-generativeai==0.3.2
 python-dotenv==1.0.1
 email-validator==2.1.0.post1
 regex==2023.12.25
-pandas==2.1.4
+pandas==2.0.3
 jinja2==3.1.3
 numpy==1.26.4
 beautifulsoup4==4.12.3
@@ -34,7 +34,8 @@ sentence-transformers==2.5.1
 scikit-learn==1.4.1.post1
 faiss-cpu==1.8.0
 transformers==4.38.2
-torch --index-url https://download.pytorch.org/whl/cpu
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch
 datasets==2.18.0
 evaluate==0.4.1
 spacy-transformers==1.3.4
