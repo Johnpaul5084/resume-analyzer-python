@@ -47,3 +47,4 @@ plotly==5.19.0
 langchain==0.1.14
 langchain-community==0.0.31
 slowapi==0.1.9
+pdfminer.six==20221105
