@@ -42,10 +42,12 @@ class AISecurityMiddleware(BaseHTTPMiddleware):
         except Exception as e:
             logger.error(f"⚠️ AI System Error: {str(e)}")
             # Sanitize error output for production
-            return JSONResponse(
+            response = JSONResponse(
                 status_code=500,
                 content={
                     "success": False, 
                     "error": "AI Neural Link Interrupted. Internal safeguarding active."
                 }
             )
+            response.headers["Access-Control-Allow-Origin"] = "*"
+            return response
