@@ -1,7 +1,11 @@
 """
 AI Mentor Bot Service
-All intelligence features (Match Intel, Roadmap, Skill Graph) are powered by OpenAI GPT-4o-mini.
-Gemini 1.5 Flash is used as a fallback if OpenAI is unavailable.
+=====================
+STRICT API SEPARATION:
+  - Match Intel, Roadmap, Skill Graph: OpenAI GPT-4o-mini ONLY
+  - NO Gemini here (Gemini is reserved for resume analysis only)
+
+If OpenAI is unavailable, uses intelligent keyword-based fallback.
 """
 
 import os
@@ -25,60 +29,43 @@ def _oai_key() -> str:
     return dotenv_values(env_path).get("OPENAI_API_KEY", "") or os.getenv("OPENAI_API_KEY", "")
 
 
-def _gem_key() -> str:
-    from dotenv import dotenv_values
-    env_path = Path(__file__).resolve().parent.parent.parent / ".env"
-    return dotenv_values(env_path).get("GEMINI_API_KEY", "") or os.getenv("GEMINI_API_KEY", "")
-
-
 def _openai_active() -> bool:
     k = _oai_key()
     return bool(k and k != _PLACEHOLDER_OPENAI and k.startswith("sk-"))
 
 
-def _call_ai(prompt: str, system: str = "You are an expert AI career analyst.", max_tokens: int = 1200) -> str:
+def _call_openai(prompt: str, system: str = "You are an expert AI career analyst.", max_tokens: int = 1200) -> str:
     """
-    Call OpenAI GPT-4o-mini → fallback to Gemini if needed.
-    Returns the text response.
+    Call OpenAI GPT-4o-mini ONLY — no Gemini fallback.
+    Returns the text response, or empty string on failure.
     """
-    if _openai_active():
-        try:
-            from openai import OpenAI
-            client = OpenAI(api_key=_oai_key())
-            resp = client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[
-                    {"role": "system", "content": system},
-                    {"role": "user",   "content": prompt},
-                ],
-                max_tokens=max_tokens,
-                temperature=0.6,
-            )
-            return resp.choices[0].message.content or ""
-        except Exception as e:
-            logger.warning(f"OpenAI failed ({e}), trying Gemini…")
+    if not _openai_active():
+        logger.info("OpenAI key not available — using fallback intelligence.")
+        return ""
 
-    gem = _gem_key()
-    if gem:
-        try:
-            import google.generativeai as genai
-            genai.configure(api_key=gem)
-            model = genai.GenerativeModel(
-                "gemini-2.0-flash",
-                generation_config={"temperature": 0.6, "max_output_tokens": max_tokens},
-            )
-            return model.generate_content(f"{system}\n\n{prompt}").text
-        except Exception as e:
-            logger.error(f"Gemini also failed: {e}")
-
-    return ""
+    try:
+        from openai import OpenAI
+        client = OpenAI(api_key=_oai_key())
+        resp = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system},
+                {"role": "user",   "content": prompt},
+            ],
+            max_tokens=max_tokens,
+            temperature=0.6,
+        )
+        return resp.choices[0].message.content or ""
+    except Exception as e:
+        logger.error(f"OpenAI failed: {e}")
+        return ""
 
 
 class AIMentorBot:
     """
-    AI Career Mentor Bot
-    Tab 1 — Match Intel : Deep market & profile analysis via OpenAI
-    Tab 2 — Roadmap     : 6-month career roadmap via OpenAI
+    AI Career Mentor Bot — OpenAI ONLY
+    Tab 1 — Match Intel : Deep market & profile analysis
+    Tab 2 — Roadmap     : 6-month career roadmap
     Tab 3 — Skill Graph : Visual skill gap chart (matplotlib)
     """
 
@@ -133,11 +120,11 @@ class AIMentorBot:
         }
 
     # ─────────────────────────────────────────────────────────────────────
-    # OpenAI-powered Match Intel
+    # OpenAI-powered Match Intel (ONLY OpenAI)
     # ─────────────────────────────────────────────────────────────────────
     @staticmethod
     def _get_match_intel(resume_text: str, user_skills: List[str], target_role: str = None) -> Dict[str, Any]:
-        """Use OpenAI to deeply analyze the resume profile and generate market intel."""
+        """Use OpenAI ONLY to deeply analyze the resume profile and generate market intel."""
 
         skills_str = ", ".join(user_skills[:20]) if user_skills else "Not specified"
 
@@ -165,38 +152,87 @@ RULES:
 - recommended_role must match the actual resume content but PRIORITIZE the TARGET ROLE if it is provided
 - missing_skills must be specific to the recommended_role domain
 - required_skills are the top skills for the recommended_role (regardless of whether the candidate has them)
-- salary_range must be realistic for India, 2024 market
+- salary_range must be realistic for India, 2025 market
 - mentor_advice must reference actual content from this resume"""
 
-        raw = _call_ai(
+        raw = _call_openai(
             prompt=prompt,
             system="You are an expert technical recruiter and career strategist. You provide accurate, data-driven career intelligence.",
             max_tokens=700,
         )
 
         if not raw:
-            return AIMentorBot._default_intel()
+            return AIMentorBot._keyword_intel(resume_text, user_skills, target_role)
 
         try:
             raw = re.sub(r"^```(?:json)?\s*", "", raw.strip())
             raw = re.sub(r"\s*```$", "", raw)
             data = json.loads(raw)
-            # Ensure growth_score is float
             data["growth_score"] = float(data.get("growth_score", 7.0))
             return data
         except Exception as e:
             logger.error(f"Intel JSON parse error: {e}\nRaw: {raw[:200]}")
-            return AIMentorBot._default_intel()
+            return AIMentorBot._keyword_intel(resume_text, user_skills, target_role)
 
     @staticmethod
-    def _default_intel() -> Dict[str, Any]:
+    def _keyword_intel(resume_text: str, user_skills: List[str], target_role: str = None) -> Dict[str, Any]:
+        """Smart keyword-based fallback when OpenAI is unavailable."""
+        text_lower = resume_text.lower()
+        skills_lower = {s.lower() for s in (user_skills or [])}
+
+        # Detect domain from resume content
+        domain = "Software Development"
+        role = target_role or "Software Engineer"
+        salary = "8-18 LPA"
+        growth = 7.5
+
+        if any(k in text_lower for k in ["machine learning", "tensorflow", "pytorch", "deep learning", "nlp", "ai/ml"]):
+            domain = "AI & Machine Learning"
+            role = target_role or "ML Engineer"
+            salary = "12-25 LPA"
+            growth = 9.2
+        elif any(k in text_lower for k in ["react", "angular", "vue", "frontend", "full stack", "node.js", "fastapi"]):
+            domain = "Full Stack Development"
+            role = target_role or "Full Stack Developer"
+            salary = "8-22 LPA"
+            growth = 8.5
+        elif any(k in text_lower for k in ["docker", "kubernetes", "devops", "ci/cd", "terraform", "jenkins"]):
+            domain = "DevOps & Cloud"
+            role = target_role or "DevOps Engineer"
+            salary = "10-25 LPA"
+            growth = 8.8
+        elif any(k in text_lower for k in ["data analyst", "sql", "tableau", "power bi", "pandas", "data science"]):
+            domain = "Data Science & Analytics"
+            role = target_role or "Data Analyst"
+            salary = "8-20 LPA"
+            growth = 8.0
+        elif any(k in text_lower for k in ["java", "spring boot", "microservices", "hibernate"]):
+            domain = "Java Backend Development"
+            role = target_role or "Java Full Stack Developer"
+            salary = "10-22 LPA"
+            growth = 8.2
+
+        # Determine missing skills based on detected domain
+        missing_by_domain = {
+            "AI & Machine Learning": ["PyTorch", "Deep Learning", "MLOps", "A/B Testing", "Feature Engineering"],
+            "Full Stack Development": ["TypeScript", "Next.js", "Docker", "System Design", "GraphQL"],
+            "DevOps & Cloud": ["Kubernetes", "Terraform", "AWS Certification", "Monitoring (Prometheus)", "Service Mesh"],
+            "Data Science & Analytics": ["Statistical Modeling", "A/B Testing", "SQL Advanced", "Tableau", "ML Fundamentals"],
+            "Java Backend Development": ["Spring Boot", "Microservices", "Kafka", "System Design", "Docker"],
+            "Software Development": ["Docker", "Kubernetes", "System Design", "DSA", "Cloud Platforms"],
+        }
+
+        missing = missing_by_domain.get(domain, missing_by_domain["Software Development"])
+        # Remove skills the user already has
+        missing = [s for s in missing if s.lower() not in skills_lower][:5]
+
         return {
-            "recommended_role": "Software Engineer",
-            "domain":           "Software Development",
-            "market_demand":    "High 📈",
-            "salary_range":     "10-20 LPA",
-            "growth_score":     7.0,
-            "missing_skills":   ["Docker", "Kubernetes", "System Design", "DSA", "Cloud Platforms"],
-            "required_skills":  ["Python/Java", "React/Angular", "SQL", "Git", "REST APIs"],
-            "mentor_advice":    "Your profile shows strong fundamentals. Focus on system design and cloud skills to unlock senior roles.",
+            "recommended_role": role,
+            "domain": domain,
+            "market_demand": "High 📈" if growth >= 8 else "Stable",
+            "salary_range": salary,
+            "growth_score": growth,
+            "missing_skills": missing,
+            "required_skills": list(skills_lower)[:6] if skills_lower else ["Python", "SQL", "Git", "REST APIs"],
+            "mentor_advice": f"Your profile shows good alignment with {domain}. Focus on building practical projects and strengthening your {', '.join(missing[:2])} skills to unlock better opportunities.",
         }

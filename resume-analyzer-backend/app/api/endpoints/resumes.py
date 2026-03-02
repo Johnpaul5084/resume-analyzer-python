@@ -111,7 +111,7 @@ async def upload_resume(
     Upload and analyze resume. AI features run in background for real-time responsiveness.
     """
     # 0. Security Validation
-    ALLOWED_EXTENSIONS = {"pdf", "docx"}
+    ALLOWED_EXTENSIONS = {"pdf", "docx", "txt"}
     MAX_FILE_SIZE = 5 * 1024 * 1024 # 5MB
     
     file_ext = file.filename.split('.')[-1].lower()

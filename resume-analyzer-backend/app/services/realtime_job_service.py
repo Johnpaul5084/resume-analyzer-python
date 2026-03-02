@@ -10,10 +10,21 @@ class RealTimeJobService:
     def search_jobs(query: str, location: str = "Remote") -> List[Dict[str, Any]]:
         """
         Fetches real-time job listings from Google Jobs via SerpApi.
+        Enforces daily credit limit to protect free tier (100 searches/month).
         """
+        from app.services.api_credit_manager import APICreditManager
+
         if not settings.SERPAPI_API_KEY:
             logger.warning("SERPAPI_API_KEY is not set. Real-time search disabled.")
             return []
+
+        # Check daily credit limit
+        allowed, remaining = APICreditManager.check_and_use("serpapi")
+        if not allowed:
+            logger.warning(f"SerpAPI daily limit reached. Using curated fallback. Resets at midnight.")
+            return []
+        
+        logger.info(f"SerpAPI credit used. Remaining today: {remaining}")
 
         try:
             params = {

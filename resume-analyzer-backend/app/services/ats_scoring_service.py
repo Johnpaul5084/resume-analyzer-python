@@ -5,6 +5,7 @@ Fallback Engine : Keyword-overlap scorer   (always works, no API key needed)
 """
 
 import asyncio
+import os
 import re
 import json
 import logging

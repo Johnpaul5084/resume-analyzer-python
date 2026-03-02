@@ -171,3 +171,28 @@ logs/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Uploads (user-uploaded resumes — never commit)
+uploads/
+resume-analyzer-backend/uploads/
+
+# Java crash logs
+hs_err_pid*.log
+
+# Test output / debug files
+test_results*.txt
+*_output.txt
+server_log.txt
+gemini_test.txt
+available_models.txt
+push_error*.txt
+
+# Backup files
+*_backup.py
+*.bak
+
+# SQLite database (local dev only)
+*.db
+
+# Data folder (if contains generated data)
+resume-analyzer-backend/data/

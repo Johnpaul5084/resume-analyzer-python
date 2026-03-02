@@ -1,10 +1,19 @@
+"""
+Roadmap AI Generator
+====================
+STRICT API SEPARATION:
+  - Career Roadmap Generation: OpenAI GPT-4o-mini ONLY
+  - NO Gemini here (Gemini is reserved for resume analysis only)
+
+If OpenAI is unavailable, provides a structured static roadmap.
+"""
+
 import os
 import logging
 from pathlib import Path
 from dotenv import load_dotenv
 from typing import List
 
-# Ensure .env is loaded regardless of import order
 load_dotenv(Path(__file__).resolve().parent.parent.parent / ".env", override=True)
 
 logger = logging.getLogger(__name__)
@@ -18,12 +27,6 @@ def _openai_key() -> str:
     return dotenv_values(env_path).get("OPENAI_API_KEY", "") or os.getenv("OPENAI_API_KEY", "")
 
 
-def _gemini_key() -> str:
-    from dotenv import dotenv_values
-    env_path = Path(__file__).resolve().parent.parent.parent / ".env"
-    return dotenv_values(env_path).get("GEMINI_API_KEY", "") or os.getenv("GEMINI_API_KEY", "")
-
-
 class RoadmapAIGenerator:
 
     @staticmethod
@@ -34,8 +37,8 @@ class RoadmapAIGenerator:
     ) -> str:
         """
         Generate a 6-month career roadmap.
-        Primary  : OpenAI GPT-4o-mini
-        Fallback : Gemini 1.5 Flash
+        Uses OpenAI GPT-4o-mini ONLY.
+        Falls back to structured static roadmap if unavailable.
         """
         prompt = f"""You are an expert AI Career Mentor advising a tech professional.
 
@@ -63,7 +66,7 @@ MONTH 5-6: Job-Ready Polish
 
 Keep the tone encouraging, professional, and specific. Do NOT use ** or ### formatting."""
 
-        # ── Try OpenAI first ────────────────────────────────────
+        # ── OpenAI ONLY ────────────────────────────────────────
         oai_key = _openai_key()
         if oai_key and oai_key != _PLACEHOLDER_OPENAI and oai_key.startswith("sk-"):
             try:
@@ -81,24 +84,37 @@ Keep the tone encouraging, professional, and specific. Do NOT use ** or ### form
                 text = resp.choices[0].message.content or ""
                 return text.replace("**", "").replace("###", "").strip()
             except Exception as e:
-                logger.warning(f"OpenAI roadmap failed ({e}), trying Gemini…")
+                logger.error(f"OpenAI roadmap failed: {e}")
 
-        # ── Fallback: Gemini ────────────────────────────────────
-        gem_key = _gemini_key()
-        if gem_key:
-            try:
-                import google.generativeai as genai
-                genai.configure(api_key=gem_key)
-                model = genai.GenerativeModel(
-                    "gemini-2.0-flash",
-                    generation_config={"temperature": 0.7, "max_output_tokens": 900},
-                )
-                resp = model.generate_content(prompt)
-                return resp.text.replace("**", "").replace("###", "").strip()
-            except Exception as e:
-                logger.error(f"Gemini roadmap also failed: {e}")
+        # ── Static Fallback ────────────────────────────────────
+        skills_str = ', '.join(missing_skills[:3]) if missing_skills else 'core fundamentals'
+        return f"""CAREER ROADMAP: {role}
 
-        return (
-            f"Could not generate roadmap for {role}. "
-            "Please check your OPENAI_API_KEY or GEMINI_API_KEY in .env."
-        )
+MONTH 1-2: Foundation & Core Skills
+- Focus on learning: {skills_str}
+- Free Resources: freeCodeCamp, Coursera (audit mode), YouTube tutorials
+- Mini Project: Build a small {role.lower()}-related project to apply basics
+- Practice DSA: Solve 30+ easy problems on LeetCode
+
+MONTH 3-4: Intermediate Mastery
+- Deep dive into: {', '.join(missing_skills[1:4]) if len(missing_skills) > 1 else 'advanced concepts'}
+- Build a real-world project that solves an actual problem
+- Deploy it on cloud (AWS/Render/Vercel)
+- Start contributing to open source projects on GitHub
+
+MONTH 5-6: Job-Ready Polish
+- Build one impressive portfolio project showcasing {role} skills
+- Prepare for technical interviews:
+  * Data Structures & Algorithms (LeetCode medium/hard)
+  * System Design fundamentals
+  * Behavioral questions using STAR method
+- Optimize your resume with quantified achievements
+- Update LinkedIn profile with projects and certifications
+- Apply to 10-15 jobs per week on LinkedIn, Naukri, and Indeed
+
+DAILY SCHEDULE (Recommended):
+- 2 hours: Coding practice / Project building
+- 1 hour: DSA / Interview prep
+- 30 minutes: Learning new concepts / Reading tech blogs
+
+Remember: Consistency beats intensity. Show up every day!"""

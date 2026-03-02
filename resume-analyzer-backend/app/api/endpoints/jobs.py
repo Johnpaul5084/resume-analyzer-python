@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from pathlib import Path
 from app.api import dependencies as deps
 from app.db.session import get_db
 from app.models.all_models import Resume, JobDescription, User

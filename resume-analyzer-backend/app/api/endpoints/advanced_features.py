@@ -11,6 +11,19 @@ from app.models.all_models import User, Resume
 
 router = APIRouter()
 
+# ==================== API CREDIT STATUS ====================
+
+@router.get("/api-credits")
+def get_api_credit_status(
+    current_user: User = Depends(deps.get_current_user)
+):
+    """
+    📊 Get daily API credit usage for all 3 AI services.
+    Shows used/remaining/limit for Gemini, OpenAI, and SerpAPI.
+    """
+    from app.services.api_credit_manager import APICreditManager
+    return APICreditManager.get_status()
+
 # ==================== QUICK FEATURES ====================
 
 @router.get("/resume-templates")
