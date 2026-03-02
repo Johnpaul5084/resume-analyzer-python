@@ -39,8 +39,9 @@ app.add_middleware(
 )
 
 # System Diagnostic: Ensure AI Engine has a pulse
-if not os.getenv("GEMINI_API_KEY"):
-    raise RuntimeError("❌ AI Neural Error: GEMINI_API_KEY not configured properly in .env")
+_gemini_key = os.getenv("GEMINI_API_KEY", "")
+if not _gemini_key or _gemini_key == "YOUR_NEW_KEY_HERE":
+    print("⚠️  WARNING: GEMINI_API_KEY not configured. AI features will be unavailable.")
 else:
     print("✅ AI Neural Link: GEMINI_API_KEY Loaded")
 app.state.limiter = limiter

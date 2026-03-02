@@ -31,9 +31,9 @@ class Settings(BaseSettings):
         return "sqlite:///./resume_analyzer.db"
     
     # JWT
-    SECRET_KEY: str = os.getenv("SECRET_KEY", "your-super-secret-key-change-this-in-prod")
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "ai_resume_analyzer_super_secret_jwt_key_2024_do_not_share")
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours (increased from 30 minutes)
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))  # 24 hours
     
     # CORS
     BACKEND_CORS_ORIGINS: List[str] = [

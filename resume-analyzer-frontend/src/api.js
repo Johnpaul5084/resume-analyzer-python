@@ -82,7 +82,12 @@ export const jobAPI = {
 // AI Mentor API (Unified)
 export const mentorAPI = {
     chat: (question, resumeId = null) => api.post('/ai-mentor/chat', { question, resume_id: resumeId }),
-    getInsight: (resumeText, skills) => api.post('/ai-mentor/insight', { resume_text: resumeText, skills: skills }),
+    getInsight: (resumeText, skills, targetRole = null) =>
+        api.post('/ai-mentor/insight', {
+            resume_text: resumeText,
+            skills: skills,
+            target_role: targetRole
+        }),
     predict: (profile) => api.post('/ai-mentor/predict', profile),
     getStrategy: (tier) => api.get(`/ai-mentor/strategy/${tier}`),
 };

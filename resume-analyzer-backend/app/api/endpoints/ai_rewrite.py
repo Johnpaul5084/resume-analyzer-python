@@ -22,18 +22,35 @@ async def transform_resume(
     current_user: User = Depends(deps.get_current_user),
 ):
     """
-    AI JD → ATS Resume Transformer
-    Aligns resume content with a specific Job Description.
+    AI Resume Transformer — rewrites resume for a specific role or JD.
+    Accepts either a role name (short) or a full job description.
     """
     from app.main import limiter
-    @limiter.limit("5/minute")
+
+    @limiter.limit("20/minute")
     async def _run(request, rewrite_req):
-        return await AIRewriteService.rewrite_resume(
-            resume_text=rewrite_req.resume_text,
-            job_description=rewrite_req.job_description,
-            mode=rewrite_req.mode
-        )
+        jd = rewrite_req.job_description or ""
+
+        # Smart routing: short = role name, long = full JD
+        if len(jd.strip()) < 80:
+            result = await AIRewriteService.rewrite_section(
+                text=rewrite_req.resume_text,
+                section_type="Entire Resume",
+                target_role=jd.strip() or "Software Engineer",
+                mode=rewrite_req.mode,
+            )
+        else:
+            result = await AIRewriteService.rewrite_section(
+                text=rewrite_req.resume_text,
+                section_type="Entire Resume",
+                job_description=jd,
+                mode=rewrite_req.mode,
+            )
+
+        return {"success": True, "rewritten_resume": result}
+
     return await _run(request, rewrite_req)
+
 
 @router.post("/enhance-grammar")
 async def enhance_grammar(
@@ -46,7 +63,7 @@ async def enhance_grammar(
     Polishes resume text while maintaining original meaning.
     """
     from app.main import limiter
-    @limiter.limit("5/minute")
+    @limiter.limit("20/minute")
     async def _run(request, grammar_req):
         enhanced_text = await AIRewriteService.grammar_enhance(grammar_req.text)
         return {"enhanced_text": enhanced_text}

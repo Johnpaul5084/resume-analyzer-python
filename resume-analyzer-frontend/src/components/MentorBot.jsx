@@ -32,10 +32,12 @@ export default function MentorBot({ resumeId }) {
         setLoading(true);
         try {
             const res = await resumeAPI.getById(resumeId);
-            const resumeText = res.data.content;
-            const skills = res.data.analysis?.key_strengths || [];
+            // ✅ correct field is content_text — not content
+            const resumeText = res.data.content_text || res.data.content || '';
+            const skills = res.data.key_strengths || res.data.analysis?.key_strengths || [];
 
-            const insight = await mentorAPI.getInsight(resumeText, skills);
+            const targetRole = res.data.predicted_role || '';
+            const insight = await mentorAPI.getInsight(resumeText, skills, targetRole);
             setMentorData(insight.data);
             setActiveTab('intel');
         } catch (err) {

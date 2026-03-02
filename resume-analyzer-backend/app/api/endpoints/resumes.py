@@ -20,73 +20,82 @@ import logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-def process_ai_features_wrapper(resume_id, text, user_id):
+def process_ai_features_wrapper(resume_id, text, user_id, target_role=None):
     # Create new DB session for background task
     from app.db.session import SessionLocal
     db = SessionLocal()
     try:
-        process_ai_features(resume_id, text, user_id, db)
+        process_ai_features(resume_id, text, user_id, db, target_role)
     except Exception as e:
         logger.error(f"Wrapper failed: {e}")
     finally:
         db.close()
 
-def process_ai_features(resume_id: int, extracted_text: str, user_id: int, db: Session):
+def process_ai_features(
+    resume_id: int,
+    extracted_text: str,
+    user_id: int,
+    db: Session,
+    target_role: str = None,  # ← explicit role from user's input
+):
     """
-    Background task to handle heavy AI operations (Prediction + Rewriting).
+    Background task: rewrite the resume for the specified or predicted role.
+    Role prediction is SKIPPED if the user already specified target_role.
     """
-    logger.info(f"Starting AI processing for resume {resume_id}...")
+    logger.info(f"Starting AI rewrite for resume {resume_id}, target={target_role}...")
     try:
-        # A. Predict Role
-        from app.services.job_prediction_service import JobPredictionService
-        logger.info("Predicting job role...")
-        predicted_role_data = JobPredictionService.predict_job_role(extracted_text)
-        logger.info(f"Prediction result: {predicted_role_data}")
-        
-        detected_role = "General"
-        if predicted_role_data and isinstance(predicted_role_data, list) and len(predicted_role_data) > 0:
-            detected_role = predicted_role_data[0]['role']
-        
-        # B. Auto-Rewrite Full Resume
+        detected_role = target_role  # use user's choice directly if provided
+
+        # Only run prediction if user didn't specify a role
+        if not detected_role:
+            from app.services.job_prediction_service import JobPredictionService
+            logger.info("No target role specified — predicting from resume...")
+            predicted_role_data = JobPredictionService.predict_job_role(extracted_text)
+            if predicted_role_data and isinstance(predicted_role_data, list):
+                detected_role = predicted_role_data[0].get('role', 'Software Engineer')
+            else:
+                detected_role = "Software Engineer"
+            logger.info(f"Predicted role: {detected_role}")
+
+        # AI Rewrite for the chosen / predicted role
         from app.services.ai_rewrite_service import AIRewriteService
         import asyncio
-        
-        logger.info(f"rewriting resume for role: {detected_role}...")
+
+        logger.info(f"Rewriting resume for role: {detected_role}...")
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        ai_rewritten_text = loop.run_until_complete(AIRewriteService.rewrite_section(
-            text=extracted_text[:3000],
-            section_type="Entire Resume", 
-            target_role=detected_role,
-            company_type="MNC"
-        ))
+        ai_rewritten_text = loop.run_until_complete(
+            AIRewriteService.rewrite_section(
+                text=extracted_text[:4000],
+                section_type="Entire Resume",
+                target_role=detected_role,
+                company_type="MNC",
+            )
+        )
         loop.close()
         logger.info("Rewrite complete.")
 
-        # Update DB
+        # Update DB — keep predicted_role from the main analysis (Gemini already set it)
+        # Only update ai_rewritten_content here
         resume = db.query(Resume).filter(Resume.id == resume_id).first()
         if resume:
-            resume.predicted_role = detected_role
             resume.ai_rewritten_content = ai_rewritten_text
             db.commit()
-            logger.info(f"Database updated for resume {resume_id}.")
+            logger.info(f"Resume {resume_id} rewrite saved to DB.")
         else:
             logger.error(f"Resume {resume_id} not found in DB during background task.")
-            
+
     except Exception as e:
         logger.error(f"Error in background AI processing: {str(e)}")
         import traceback
         traceback.print_exc()
-        
-        # Update DB with Failure State
         try:
             resume = db.query(Resume).filter(Resume.id == resume_id).first()
             if resume:
-                resume.predicted_role = "Analysis Failed"
-                resume.ai_rewritten_content = "AI processing failed. Please try again."
+                resume.ai_rewritten_content = "AI rewrite failed. Please try the Optimize option manually."
                 db.commit()
         except Exception as db_e:
-            logger.error(f"Failed to update resume status to Failed: {db_e}")
+            logger.error(f"Failed to update resume status: {db_e}")
 
 @router.post("/upload", response_model=ResumeDetailedAnalysis)
 async def upload_resume(
@@ -126,17 +135,32 @@ async def upload_resume(
     if not extracted_text:
          raise HTTPException(status_code=400, detail="Could not extract text from file.")
 
-    # 2. Analyze Resume (ATS Score - Semantic)
-    analysis_result = await ATSScoringService.calculate_score(extracted_text, job_description)
+    # 2. Analyze Resume
+    # Smart detection: short input = role name; long input = full job description
+    user_target_role = None
+    jd_text = None
+
+    if job_description:
+        if len(job_description.strip()) < 80:
+            # User typed a role name (e.g. "Devops", "Data Scientist")
+            user_target_role = job_description.strip()
+        else:
+            # User pasted a full job description
+            jd_text = job_description
+
+    analysis_result = await ATSScoringService.calculate_score(
+        extracted_text,
+        job_description=jd_text,
+        target_role=user_target_role,
+    )
     parsed_sections = AIRawParser.extract_sections(extracted_text)
+
     
-    # 3. Save Initial Data to DB
+    # 3. Save File to Disk (use the already-read content bytes)
     file_location = f"uploads/{current_user.id}_{file.filename}"
     os.makedirs("uploads", exist_ok=True)
-    
     with open(file_location, "wb") as f:
-        file_content = await file.read()
-        f.write(file_content)
+        f.write(content)   # `content` was read at the top — no second read needed
         
     db_resume = Resume(
         title=title,
@@ -148,9 +172,9 @@ async def upload_resume(
         score_breakdown=analysis_result["breakdown"],
         missing_keywords=analysis_result.get("missing_skills", []),
         owner_id=current_user.id,
-        predicted_role="Analyzing...", # Placeholder
+        # ✅ Use Gemini-predicted role immediately — no more "Analyzing..." placeholder
+        predicted_role=analysis_result.get("predicted_role", "Analyzing..."),
         ai_rewritten_content=None,
-        # Phoenix Futuristic Fields
         analysis=analysis_result.get("analysis"),
         suggestions=analysis_result.get("suggestions"),
         key_strengths=analysis_result.get("key_strengths"),
@@ -161,8 +185,15 @@ async def upload_resume(
     db.commit()
     db.refresh(db_resume)
     
-    # 4. Trigger Background AI Processing
-    background_tasks.add_task(process_ai_features_wrapper, db_resume.id, extracted_text, current_user.id)
+    # 4. Background task: rewrite resume using the user's target role (or Gemini-predicted one)
+    rewrite_role = user_target_role or analysis_result.get("predicted_role", "Software Engineer")
+    background_tasks.add_task(
+        process_ai_features_wrapper,
+        db_resume.id,
+        extracted_text,
+        current_user.id,
+        rewrite_role,  # ← pass the correct role explicitly
+    )
     
     return db_resume
 
@@ -236,7 +267,7 @@ async def rewrite_resume_section(
     """
     from app.main import limiter
     # Throttling to protect Gemini QPS
-    @limiter.limit("5/minute")
+    @limiter.limit("20/minute")
     async def _rewrite(request, rewrite_req):
         from app.services.ai_rewrite_service import AIRewriteService
         return await AIRewriteService.rewrite_section(

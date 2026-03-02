@@ -11,6 +11,7 @@ export default function ResumeDetail() {
     const [resume, setResume] = useState(null);
     const [recommendations, setRecommendations] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [recsLoading, setRecsLoading] = useState(false);
 
     useEffect(() => {
         fetchResumeDetails();
@@ -24,9 +25,12 @@ export default function ResumeDetail() {
             interval = setInterval(() => {
                 fetchResumeDetails();
             }, 5000); // Poll every 5s
+        } else if (resume && resume.predicted_role !== "Analyzing..." && recommendations.length === 0) {
+            // Once analysis is done, if we haven't fetched real recs yet, do it now
+            fetchRecommendations();
         }
         return () => clearInterval(interval);
-    }, [resume]);
+    }, [resume, recommendations.length]);
 
     const fetchResumeDetails = async () => {
         try {
@@ -40,11 +44,14 @@ export default function ResumeDetail() {
     };
 
     const fetchRecommendations = async () => {
+        setRecsLoading(true);
         try {
             const response = await jobAPI.getRecommendations(id);
             setRecommendations(response.data);
         } catch (err) {
             console.error('Error fetching recommendations:', err);
+        } finally {
+            setRecsLoading(false);
         }
     };
 
@@ -182,35 +189,101 @@ export default function ResumeDetail() {
             </div>
 
             {/* Market Recommendations Section */}
-            {recommendations.length > 0 && (
-                <div className="space-y-10">
-                    <div className="flex items-center gap-6">
-                        <h2 className="text-3xl font-black tracking-tighter text-white">Market Opportunities</h2>
-                        <div className="h-px flex-1 bg-white/5"></div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {recommendations.map((rec, idx) => (
-                            <div key={idx} className="glass-card p-8 hover:border-indigo-500/50 group transition-all duration-300">
-                                <div className="flex justify-between items-start mb-6">
-                                    <div>
-                                        <h3 className="font-black text-white text-lg leading-none mb-2">{rec.title}</h3>
-                                        <p className="text-indigo-400 font-bold text-[10px] uppercase tracking-widest">{rec.company}</p>
-                                    </div>
-                                    <span className="text-[10px] font-black bg-emerald-500/10 text-emerald-500 px-3 py-1 rounded-full uppercase tracking-tighter">
-                                        {rec.match_percentage.toFixed(0)}% Fit
-                                    </span>
-                                </div>
-                                <button
-                                    onClick={() => rec.apply_link && window.open(rec.apply_link, '_blank')}
-                                    className="w-full py-4 bg-white/5 text-slate-400 rounded-2xl font-black uppercase tracking-widest text-[10px] border border-white/5 group-hover:bg-indigo-600 group-hover:text-white group-hover:border-indigo-500 transition-all"
-                                >
-                                    Initiate Protocol
-                                </button>
-                            </div>
-                        ))}
-                    </div>
+            <div className="space-y-10">
+                <div className="flex items-center gap-6">
+                    <h2 className="text-3xl font-black tracking-tighter text-white">Market Opportunities</h2>
+                    <div className="h-px flex-1 bg-white/5"></div>
+                    <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest px-3 py-1 bg-indigo-500/10 rounded-full border border-indigo-500/20">
+                        {resume.predicted_role || 'All Roles'}
+                    </span>
                 </div>
-            )}
+
+                {recommendations.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {recommendations.map((rec, idx) => {
+                            // Extract portal links from improvement_suggestions
+                            const linkedinLink = rec.improvement_suggestions?.find(s => s.includes('linkedin'))?.split('LinkedIn: ')[1]
+                                || rec.apply_link;
+                            const indeedLink = rec.improvement_suggestions?.find(s => s.includes('indeed'))?.split('Indeed: ')[1];
+                            const naukriLink = rec.improvement_suggestions?.find(s => s.includes('naukri'))?.split('Naukri: ')[1];
+
+                            return (
+                                <div key={idx} className="glass-card p-8 hover:border-indigo-500/50 group transition-all duration-300 flex flex-col gap-5">
+                                    {/* Header */}
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="font-black text-white text-base leading-tight mb-1 truncate">{rec.title}</h3>
+                                            <p className="text-indigo-400 font-bold text-[10px] uppercase tracking-widest">{rec.company}</p>
+                                        </div>
+                                        <span className="ml-3 shrink-0 text-[10px] font-black bg-emerald-500/10 text-emerald-400 px-3 py-1 rounded-full uppercase tracking-tighter border border-emerald-500/20">
+                                            {rec.match_percentage?.toFixed(0)}% Fit
+                                        </span>
+                                    </div>
+
+                                    {/* Meta */}
+                                    <div className="flex flex-wrap gap-2">
+                                        {rec.location && (
+                                            <span className="text-[9px] font-bold text-slate-400 bg-white/5 px-3 py-1 rounded-full border border-white/5">
+                                                📍 {rec.location}
+                                            </span>
+                                        )}
+                                        {rec.salary_range && rec.salary_range !== 'Competitive' && (
+                                            <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/5 px-3 py-1 rounded-full border border-emerald-500/10">
+                                                💰 {rec.salary_range}
+                                            </span>
+                                        )}
+                                        {rec.posted_date && (
+                                            <span className="text-[9px] font-bold text-slate-500 bg-white/5 px-3 py-1 rounded-full border border-white/5">
+                                                🕐 {rec.posted_date}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    {/* Apply Buttons */}
+                                    <div className="flex flex-col gap-2 mt-auto">
+                                        {linkedinLink && (
+                                            <button
+                                                onClick={() => window.open(linkedinLink, '_blank')}
+                                                className="w-full py-3 bg-blue-600/10 border border-blue-500/20 text-blue-400 hover:bg-blue-600 hover:text-white hover:border-blue-500 rounded-xl font-black uppercase tracking-widest text-[9px] transition-all"
+                                            >
+                                                🔗 Apply on LinkedIn
+                                            </button>
+                                        )}
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {indeedLink && (
+                                                <button
+                                                    onClick={() => window.open(indeedLink, '_blank')}
+                                                    className="py-2 bg-white/5 border border-white/5 text-slate-400 hover:bg-indigo-600/30 hover:text-white rounded-xl font-black uppercase tracking-widest text-[9px] transition-all"
+                                                >
+                                                    Indeed
+                                                </button>
+                                            )}
+                                            {naukriLink && (
+                                                <button
+                                                    onClick={() => window.open(naukriLink, '_blank')}
+                                                    className="py-2 bg-white/5 border border-white/5 text-slate-400 hover:bg-indigo-600/30 hover:text-white rounded-xl font-black uppercase tracking-widest text-[9px] transition-all"
+                                                >
+                                                    Naukri
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                ) : recsLoading ? (
+                    <div className="glass-card p-12 text-center text-slate-500 italic text-sm">
+                        Synchronizing with live markets for <span className="text-indigo-400 font-bold">{resume.predicted_role}</span>…
+                    </div>
+                ) : (
+                    <div className="glass-card p-12 text-center text-slate-500 italic text-sm">
+                        No specific live opportunities found for <span className="text-white font-bold">{resume.predicted_role}</span>. <br />
+                        Try adjusting your alignment context.
+                    </div>
+                )}
+            </div>
+
         </div>
     );
 }

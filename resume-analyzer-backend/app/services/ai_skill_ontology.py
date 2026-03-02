@@ -17,8 +17,13 @@ class SkillOntology:
         "Web Development": {
             "Frontend": ["React", "Angular", "Vue", "JavaScript", "TypeScript", "HTML5", "CSS3", "Tailwind"],
             "Backend": ["Node.js", "Express", "Django", "FastAPI", "Flask", "Spring Boot", "Go"],
-            "Database": ["PostgreSQL", "MongoDB", "MySQL", "Redis", "Elasticsearch"],
-            "DevOps": ["Docker", "Kubernetes", "CI/CD", "AWS", "Azure", "GCP", "Nginx"]
+            "Database": ["PostgreSQL", "MongoDB", "MySQL", "Redis", "Elasticsearch"]
+        },
+        "DevOps & Cloud": {
+            "Containers": ["Docker", "Kubernetes", "OpenShift"],
+            "CI/CD": ["Jenkins", "GitLab CI", "GitHub Actions", "CircleCI"],
+            "Cloud": ["AWS", "Azure", "GCP", "Terraform", "Ansible"],
+            "Linux": ["Bash", "Linux", "Shell Scripting", "Nginx", "Prometheus", "Grafana"]
         },
         "Software Engineering": {
             "Languages": ["C++", "Java", "C#", "Rust", "Go"],
@@ -26,6 +31,20 @@ class SkillOntology:
             "Practices": ["Unit Testing", "Microservices", "TDD", "Agile", "Scrum"]
         }
     }
+
+    @staticmethod
+    def map_role_to_cluster(role: str) -> str:
+        """Heuristic to map a user-specified role to an ontology cluster."""
+        r = role.lower()
+        if any(x in r for x in ["data", "ml", "ai", "machine", "intelligence", "scientist", "analytic"]):
+            return "Data Science"
+        if any(x in r for x in ["devops", "cloud", "infra", "sre", "reliability", "jenkins", "docker", "kubernetes"]):
+            return "DevOps & Cloud"
+        if any(x in r for x in ["web", "full", "stack", "react", "front", "back", "node"]):
+            return "Web Development"
+        if any(x in r for x in ["java", "software", "backend", "system", "rust", "cpp", "architect"]):
+            return "Software Engineering"
+        return "General Engineering"
 
     @staticmethod
     def identify_primary_cluster(skills: List[str]) -> str:
