@@ -124,11 +124,33 @@ class APICreditManager:
             return max(0, cls._limits.get(api, 100) - usage["count"])
 
     @classmethod
+    def get_reset_info(cls) -> dict:
+        """Get reset time information for the next day's quota."""
+        import datetime
+        now = datetime.datetime.now()
+        tomorrow = (now + datetime.timedelta(days=1)).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+        diff = tomorrow - now
+        hours_left = int(diff.total_seconds() // 3600)
+        minutes_left = int((diff.total_seconds() % 3600) // 60)
+        return {
+            "reset_at": tomorrow.strftime("%Y-%m-%d %H:%M:%S"),
+            "hours_until_reset": hours_left,
+            "minutes_until_reset": minutes_left,
+            "reset_message": f"Credits reset in {hours_left}h {minutes_left}m (at midnight)"
+        }
+
+    @classmethod
     def get_status(cls) -> dict:
-        """Get all API usage status for dashboard."""
+        """Get all API usage status for dashboard, with exhaustion flags and reset info."""
         cls._load_limits()
         today = cls._today()
+        reset_info = cls.get_reset_info()
         status = {}
+        any_exhausted = False
+        exhausted_apis = []
+
         for api in cls._usage:
             with cls._lock:
                 usage = cls._usage[api]
@@ -137,13 +159,25 @@ class APICreditManager:
                 else:
                     used = usage["count"]
                 limit = cls._limits.get(api, 100)
+                remaining = max(0, limit - used)
+                exhausted = remaining == 0
+                if exhausted:
+                    any_exhausted = True
+                    exhausted_apis.append(api.upper())
                 status[api] = {
                     "used_today": used,
                     "daily_limit": limit,
-                    "remaining": max(0, limit - used),
+                    "remaining": remaining,
                     "percentage_used": round(used / limit * 100, 1) if limit > 0 else 0,
+                    "exhausted": exhausted,
                 }
-        return status
+
+        return {
+            "credits": status,
+            "any_exhausted": any_exhausted,
+            "exhausted_apis": exhausted_apis,
+            "reset_info": reset_info,
+        }
 
     @classmethod
     def check_and_use(cls, api_name: str) -> tuple:

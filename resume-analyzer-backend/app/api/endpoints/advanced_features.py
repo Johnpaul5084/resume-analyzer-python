@@ -19,10 +19,26 @@ def get_api_credit_status(
 ):
     """
     📊 Get daily API credit usage for all 3 AI services.
-    Shows used/remaining/limit for Gemini, OpenAI, and SerpAPI.
+    Shows used/remaining/limit/exhausted for Gemini, OpenAI, and SerpAPI.
+    Includes reset time info so the frontend knows when credits renew.
     """
     from app.services.api_credit_manager import APICreditManager
     return APICreditManager.get_status()
+
+@router.get("/credits-check")
+def check_credits_quick():
+    """
+    ⚡ Quick credit check (no auth required) — for global banner display.
+    Returns only exhaustion flags and reset info (lightweight).
+    """
+    from app.services.api_credit_manager import APICreditManager
+    status = APICreditManager.get_status()
+    return {
+        "any_exhausted": status["any_exhausted"],
+        "exhausted_apis": status["exhausted_apis"],
+        "reset_info": status["reset_info"],
+        "credits": status["credits"],
+    }
 
 # ==================== QUICK FEATURES ====================
 

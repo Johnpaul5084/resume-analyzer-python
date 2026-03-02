@@ -46,6 +46,25 @@ api.interceptors.response.use(
             // Rate Limit Triggered
             alert("Security: Neural link throttled. Please wait a minute before sending more AI requests.");
         }
+
+        // Check for credit exhaustion (any error where the message mentions "credit limit")
+        if (error.response && error.response.data) {
+            const errMsg = typeof error.response.data === 'string'
+                ? error.response.data
+                : JSON.stringify(error.response.data);
+
+            if (errMsg.toLowerCase().includes('credit limit') ||
+                errMsg.toLowerCase().includes('daily limit reached') ||
+                errMsg.toLowerCase().includes('resets at midnight')) {
+                // Dispatch a custom event so the CreditStatusBanner can react
+                window.dispatchEvent(new CustomEvent('api-credits-exhausted', {
+                    detail: {
+                        message: errMsg,
+                        timestamp: Date.now()
+                    }
+                }));
+            }
+        }
         return Promise.reject(error);
     }
 );
@@ -98,6 +117,12 @@ export const rewriteAPI = {
         api.post('/ai-rewrite/transform', { resume_text: resumeText, job_description: jobDescription, mode }),
     enhanceGrammar: (text) =>
         api.post('/ai-rewrite/enhance-grammar', { text }),
+};
+
+// Credit Status API
+export const creditAPI = {
+    getStatus: () => api.get('/advanced/api-credits'),
+    quickCheck: () => api.get('/advanced/credits-check'),
 };
 
 export default api;

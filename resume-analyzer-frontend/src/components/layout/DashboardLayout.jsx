@@ -1,5 +1,6 @@
 import React from 'react';
 import Sidebar from './Sidebar';
+import CreditStatusBanner from '../CreditStatusBanner';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function DashboardLayout({ children }) {
@@ -30,6 +31,9 @@ export default function DashboardLayout({ children }) {
                             </div>
                         </div>
                     </div>
+
+                    {/* Credit Exhaustion Banner (Global) */}
+                    <CreditStatusBanner />
 
                     {/* Page Content with Entrance Animation */}
                     <motion.div
