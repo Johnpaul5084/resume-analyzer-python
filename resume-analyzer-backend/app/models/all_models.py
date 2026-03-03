@@ -61,3 +61,26 @@ class JobDescription(Base):
     required_skills = Column(JSON)
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class ResumeVersion(Base):
+    """Track resume improvement over time — version snapshots for analytics."""
+    __tablename__ = "resume_versions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    resume_id = Column(Integer, ForeignKey("resumes.id"), nullable=False, index=True)
+    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    version_number = Column(Integer, default=1)
+    title = Column(String, nullable=True)
+
+    # Snapshot of analysis at this version
+    ats_score = Column(Float, default=0.0)
+    predicted_role = Column(String, nullable=True)
+    score_breakdown = Column(JSON, nullable=True)
+    missing_skills = Column(JSON, nullable=True)
+    key_strengths = Column(JSON, nullable=True)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    # Relationships
+    resume = relationship("Resume", backref="versions")
+    owner = relationship("User")

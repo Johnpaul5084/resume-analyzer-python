@@ -4,7 +4,10 @@ AI Resume Builder Service - Generate professional resumes using AI
 import google.generativeai as genai
 from app.core.config import settings
 import json
+import logging
 from typing import Dict, Any, Optional
+
+logger = logging.getLogger(__name__)
 
 class AIResumeBuilderService:
     """Service for AI-powered resume generation"""
@@ -112,7 +115,7 @@ Return ONLY a valid JSON object with this structure:
             }
             
         except Exception as e:
-            print(f"AI Resume Generation Error: {e}")
+            logger.error("AI Resume Generation Error: %s", e)
             return AIResumeBuilderService._generate_template_resume(user_info, target_role)
     
     @staticmethod
@@ -220,7 +223,7 @@ Return ONLY the improved bullet point, nothing else.
             return response.text.strip()
             
         except Exception as e:
-            print(f"Bullet point optimization error: {e}")
+            logger.error("Bullet point optimization error: %s", e)
             return bullet_point
     
     @staticmethod
@@ -257,5 +260,5 @@ Return ONLY the summary text, nothing else.
             return response.text.strip()
             
         except Exception as e:
-            print(f"Summary generation error: {e}")
+            logger.error("Summary generation error: %s", e)
             return f"Experienced {target_role} with {experience_years}+ years of expertise in {', '.join(skills[:3])}."

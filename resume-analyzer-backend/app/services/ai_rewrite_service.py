@@ -3,10 +3,16 @@ import google.generativeai as genai
 from pathlib import Path
 from dotenv import load_dotenv
 from app.core.config import settings
+from app.core.resilience import (
+    guard_prompt_injection,
+    sanitize_resume_text,
+    GEMINI_TIMEOUT_SECONDS,
+)
 from typing import Optional, Dict, Any
 import json
 import re
 import logging
+import asyncio
 
 logger = logging.getLogger(__name__)
 
@@ -16,22 +22,21 @@ load_dotenv(dotenv_path=_env_path, override=False)
 
 
 def _get_gemini_model(model_name: str = "gemini-2.0-flash"):
-    """Always fetches the API key fresh and returns a configured model. Checks credit limits."""
-    from dotenv import dotenv_values
+    """Returns a configured Gemini model. API key is configured once via singleton.
+    Credit limits are checked per call."""
     from app.services.api_credit_manager import APICreditManager
+    from app.core.ai_model import AIModelManager
 
     # Check daily credit limit first
     allowed, remaining = APICreditManager.check_and_use("gemini")
     if not allowed:
         raise ValueError(f"Gemini daily credit limit reached (0 remaining). Resets at midnight. Use fallback.")
 
-    env_path = Path(__file__).resolve().parent.parent.parent / ".env"
-    vals = dotenv_values(env_path)
-    key = vals.get("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY") or settings.GEMINI_API_KEY or ""
-    
-    if not key or key == "YOUR_NEW_KEY_HERE":
+    # Configure API key exactly once (singleton)
+    key = AIModelManager.configure_gemini()
+    if not key:
         raise ValueError("GEMINI_API_KEY not configured in .env")
-    genai.configure(api_key=key)
+
     logger.info(f"Gemini credit used. Remaining today: {remaining}")
     return genai.GenerativeModel(
         model_name,
@@ -51,10 +56,11 @@ class AIRewriteService:
 
         def _sync():
             model = _get_gemini_model()
+            safe_text = guard_prompt_injection(text[:3000])
             prompt = f"""Analyze this resume and determine the SINGLE most suitable job role.
 
 RESUME:
-{text[:3000]}
+{safe_text}
 
 Consider:
 1. The candidate's primary skills, technologies, and experience
@@ -72,9 +78,15 @@ No explanation, no quotes, just the role name."""
             return role if role else "Software Engineer"
 
         try:
-            return await asyncio.to_thread(_sync)
+            return await asyncio.wait_for(
+                asyncio.to_thread(_sync),
+                timeout=GEMINI_TIMEOUT_SECONDS,
+            )
+        except asyncio.TimeoutError:
+            logger.error("Role detection timed out after %ds", GEMINI_TIMEOUT_SECONDS)
+            return "Software Engineer"
         except Exception as e:
-            logger.error(f"Role detection error: {e}")
+            logger.error("Role detection error: %s", e)
             return "Software Engineer"
 
     @staticmethod
@@ -172,9 +184,15 @@ OUTPUT: Return the COMPLETE rewritten resume text only. No introduction or comme
             return cleaned
 
         try:
-            return await asyncio.to_thread(_sync_rewrite)
+            return await asyncio.wait_for(
+                asyncio.to_thread(_sync_rewrite),
+                timeout=GEMINI_TIMEOUT_SECONDS,
+            )
+        except asyncio.TimeoutError:
+            logger.error("AI Rewrite timed out after %ds", GEMINI_TIMEOUT_SECONDS)
+            return "Rewrite timed out. Please try again."
         except Exception as e:
-            logger.error(f"AI Rewrite Error: {e}")
+            logger.error("AI Rewrite Error: %s", e)
             return f"Rewrite failed: {str(e)}"
 
     @staticmethod
@@ -218,9 +236,15 @@ OUTPUT: Return ONLY the polished text. No introductions, no commentary, no "Here
             return result
 
         try:
-            return await asyncio.to_thread(_sync)
+            return await asyncio.wait_for(
+                asyncio.to_thread(_sync),
+                timeout=GEMINI_TIMEOUT_SECONDS,
+            )
+        except asyncio.TimeoutError:
+            logger.error("Grammar enhancement timed out")
+            return "Enhancement timed out. Please try again."
         except Exception as e:
-            logger.error(f"Grammar Enhancement Error: {e}")
+            logger.error("Grammar Enhancement Error: %s", e)
             return f"Error: {str(e)}"
 
     @staticmethod
@@ -250,9 +274,15 @@ OUTPUT: Return ONLY the 3-sentence summary. Nothing else."""
             return model.generate_content(prompt).text.strip()
 
         try:
-            return await asyncio.to_thread(_sync)
+            return await asyncio.wait_for(
+                asyncio.to_thread(_sync),
+                timeout=GEMINI_TIMEOUT_SECONDS,
+            )
+        except asyncio.TimeoutError:
+            logger.error("Summary generation timed out")
+            return "Summary generation timed out. Please try again."
         except Exception as e:
-            logger.error(f"Summary Generation Error: {e}")
+            logger.error("Summary Generation Error: %s", e)
             return f"Error: {str(e)}"
 
     @staticmethod
@@ -301,7 +331,13 @@ Return ONLY valid JSON:
             return {"match_score": 0, "missing_skills": [], "improvement_areas": [], "target_role": target_role}
 
         try:
-            return await asyncio.to_thread(_sync)
+            return await asyncio.wait_for(
+                asyncio.to_thread(_sync),
+                timeout=GEMINI_TIMEOUT_SECONDS,
+            )
+        except asyncio.TimeoutError:
+            logger.error("Validate fit timed out")
+            return {"error": "Analysis timed out", "target_role": target_role}
         except Exception as e:
-            logger.error(f"Validate fit error: {e}")
+            logger.error("Validate fit error: %s", e)
             return {"error": str(e), "target_role": target_role}

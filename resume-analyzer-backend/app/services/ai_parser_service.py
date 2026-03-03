@@ -16,12 +16,8 @@ class AIParserService:
     @classmethod
     def get_nlp(cls):
         if cls._nlp is None:
-            try:
-                import spacy
-                cls._nlp = spacy.load("en_core_web_sm")
-            except Exception as e:
-                logger.error(f"Failed to load spaCy model: {e}")
-                return None
+            from app.core.ai_model import AIModelManager
+            cls._nlp = AIModelManager.get_spacy_nlp()
         return cls._nlp
 
     @staticmethod

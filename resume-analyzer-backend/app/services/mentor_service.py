@@ -12,6 +12,7 @@ import os
 import re
 import json
 import logging
+import asyncio
 from pathlib import Path
 from dotenv import load_dotenv
 from typing import List, Dict, Any
@@ -287,33 +288,48 @@ Return ONLY valid JSON:
     async def _openai_advice(query: str, history: List[Dict] = None) -> str:
         from openai import AsyncOpenAI
         key = _read_openai_key()
-        client = AsyncOpenAI(api_key=key)
+        client = AsyncOpenAI(api_key=key, timeout=30.0)
 
         messages = [{"role": "system", "content": _SYSTEM_PROMPT}]
         if history:
             messages.extend(history[-6:])
         messages.append({"role": "user", "content": query})
 
-        resp = await client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=messages,
-            max_tokens=600,
-            temperature=0.7,
-        )
-        return resp.choices[0].message.content
+        try:
+            resp = await asyncio.wait_for(
+                client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=messages,
+                    max_tokens=600,
+                    temperature=0.7,
+                ),
+                timeout=30,
+            )
+            return resp.choices[0].message.content
+        except asyncio.TimeoutError:
+            logger.error("OpenAI advice call timed out after 30s")
+            raise Exception("AI mentor request timed out. Please try again.")
 
     @staticmethod
     async def _openai_raw(prompt: str) -> str:
         from openai import AsyncOpenAI
         key = _read_openai_key()
-        client = AsyncOpenAI(api_key=key)
-        resp = await client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": "You are a career roadmap generator. Return only valid JSON."},
-                {"role": "user",   "content": prompt},
-            ],
-            max_tokens=600,
-            temperature=0.4,
-        )
-        return resp.choices[0].message.content
+        client = AsyncOpenAI(api_key=key, timeout=30.0)
+
+        try:
+            resp = await asyncio.wait_for(
+                client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[
+                        {"role": "system", "content": "You are a career roadmap generator. Return only valid JSON."},
+                        {"role": "user",   "content": prompt},
+                    ],
+                    max_tokens=600,
+                    temperature=0.4,
+                ),
+                timeout=30,
+            )
+            return resp.choices[0].message.content
+        except asyncio.TimeoutError:
+            logger.error("OpenAI raw call timed out after 30s")
+            raise Exception("AI roadmap generation timed out. Please try again.")

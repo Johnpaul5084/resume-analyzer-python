@@ -1,7 +1,20 @@
+"""AI Scoring Engine — CORE scoring logic (keyword-based fallback).
+
+This is the CORE scoring module. It implements the keyword-based,
+multi-metric scoring algorithm that runs without any external API.
+
+`ats_scoring_service.py` is the WRAPPER that:
+  - Tries Gemini first (deep semantic analysis)
+  - Falls back to THIS engine when Gemini is unavailable
+
+Do NOT duplicate scoring logic — all local scoring must live here.
+"""
+
 from app.services.ai_skill_ontology import SkillOntology
 import re
 import json
 import os
+import time
 import logging
 from typing import Dict, List, Any
 
@@ -25,6 +38,7 @@ class AIScoringEngine:
                     + 0.20*experience_depth + 0.20*structure_score
         All sub-scores are in 0-100 range.
         """
+        _t0 = time.perf_counter()
         words = resume_text.split()
         word_count = len(words)
         user_skills = parsed_data.get("skills", [])
@@ -75,6 +89,12 @@ class AIScoringEngine:
             (structure_score  * 0.20)
         )
         final_score = round(final_score, 2)
+
+        _elapsed_ms = (time.perf_counter() - _t0) * 1000
+        logger.info(
+            "Keyword scoring completed | role=%s | score=%.2f | elapsed=%.1fms",
+            target_role, final_score, _elapsed_ms,
+        )
 
         # Cluster & gaps for dynamic suggestions — priority to target_role
         if target_role and target_role != "Software Engineer":

@@ -2,6 +2,9 @@ from sqlalchemy.orm import Session
 from app.models.all_models import JobDescription
 import csv
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 def init_db(db: Session):
     # Check if we already have jobs
@@ -10,10 +13,10 @@ def init_db(db: Session):
 
     csv_path = "data/job_listings.csv"
     if not os.path.exists(csv_path):
-        print(f"Warning: {csv_path} not found. Skipping initial data seeding.")
+        logger.warning("%s not found. Skipping initial data seeding.", csv_path)
         return
 
-    print("Seeding database with job listings from CSV...")
+    logger.info("Seeding database with job listings from CSV...")
     with open(csv_path, newline='', encoding='utf-8') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
@@ -29,4 +32,4 @@ def init_db(db: Session):
             db.add(job)
     
     db.commit()
-    print("Database seeded successfully.")
+    logger.info("Database seeded successfully.")

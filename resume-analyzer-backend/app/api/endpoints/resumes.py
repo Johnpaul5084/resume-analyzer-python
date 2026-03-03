@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, status
+from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, status, Request
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from app.api import dependencies as deps
@@ -8,6 +8,7 @@ from app.schemas.all_schemas import ResumeDetailedAnalysis, ResumeInDBBase, Resu
 from app.services.ai_parser_service import AIParserService
 from app.services.file_parser_service import AIRawParser
 from app.services.ats_scoring_service import ATSScoringService
+from app.core.resilience import validate_file_content
 import os
 
 router = APIRouter()
@@ -97,8 +98,15 @@ def process_ai_features(
         except Exception as db_e:
             logger.error(f"Failed to update resume status: {db_e}")
 
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+
+limiter = Limiter(key_func=get_remote_address)
+
 @router.post("/upload", response_model=ResumeDetailedAnalysis)
+@limiter.limit("10/minute")
 async def upload_resume(
+    request: Request,
     *,
     db: Session = Depends(get_db),
     file: UploadFile = File(...),
@@ -122,7 +130,13 @@ async def upload_resume(
     content = await file.read()
     if len(content) > MAX_FILE_SIZE:
         raise HTTPException(status_code=413, detail="Security: Document too large (Limit 5MB).")
-    
+
+    # Validate file content (check for embedded scripts/malware)
+    try:
+        validate_file_content(content, file.filename)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Security: {str(e)}")
+
     # Seek back to start for parser
     await file.seek(0)
 
@@ -194,7 +208,26 @@ async def upload_resume(
         current_user.id,
         rewrite_role,  # ← pass the correct role explicitly
     )
-    
+
+    # 5. Auto-create version snapshot for tracking
+    try:
+        from app.models.all_models import ResumeVersion
+        snapshot = ResumeVersion(
+            resume_id=db_resume.id,
+            owner_id=current_user.id,
+            version_number=1,
+            title=f"v1 - {title}",
+            ats_score=db_resume.ats_score,
+            predicted_role=db_resume.predicted_role,
+            score_breakdown=db_resume.score_breakdown,
+            missing_skills=db_resume.missing_keywords,
+            key_strengths=db_resume.key_strengths,
+        )
+        db.add(snapshot)
+        db.commit()
+    except Exception as e:
+        logger.warning("Auto-snapshot failed: %s", e)
+
     return db_resume
 
 

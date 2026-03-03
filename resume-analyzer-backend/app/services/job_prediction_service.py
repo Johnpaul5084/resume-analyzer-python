@@ -4,6 +4,7 @@ import logging
 import json
 import re
 import os
+import time
 from pathlib import Path
 from dotenv import dotenv_values
 
@@ -66,16 +67,18 @@ class JobPredictionService:
         Uses Gemini for genuine AI-powered prediction.
         Falls back gracefully to keyword-based RAG if Gemini is unavailable.
         """
+        _t0 = time.perf_counter()
         labels = candidate_labels or JobPredictionService.DEFAULT_ROLES
 
         # ── Try Gemini first (with credit check) ─────────────────────
         from app.services.api_credit_manager import APICreditManager
-        gemini_key = _get_gemini_key()
-        allowed, remaining = APICreditManager.check_and_use("gemini") if gemini_key else (False, 0)
+        from app.core.ai_model import AIModelManager
+
+        key = AIModelManager.configure_gemini()
+        allowed, remaining = APICreditManager.check_and_use("gemini") if key else (False, 0)
         
-        if gemini_key and gemini_key != "YOUR_NEW_KEY_HERE" and allowed:
+        if key and allowed:
             try:
-                genai.configure(api_key=gemini_key)
                 logger.info(f"Gemini prediction credit used. Remaining: {remaining}")
                 model = genai.GenerativeModel(
                     "gemini-2.0-flash",
@@ -113,7 +116,11 @@ Return ONLY valid JSON array, no explanation:
                 if json_match:
                     predictions = json.loads(json_match.group())
                     if predictions and isinstance(predictions, list):
-                        logger.info(f"Gemini predicted roles: {[p['role'] for p in predictions]}")
+                        _elapsed_ms = (time.perf_counter() - _t0) * 1000
+                        logger.info(
+                            "Gemini job prediction completed | roles=%s | latency=%.0fms",
+                            [p['role'] for p in predictions], _elapsed_ms,
+                        )
                         return predictions[:5]
 
                 logger.warning(f"Gemini returned unparseable output: {response.text[:200]}")
@@ -123,7 +130,10 @@ Return ONLY valid JSON array, no explanation:
 
         # ── Fallback: RAG keyword-based prediction ────────────────────
         logger.info("Falling back to RAG-based role prediction.")
-        return JobPredictionService._rag_predict(resume_text)
+        result = JobPredictionService._rag_predict(resume_text)
+        _elapsed_ms = (time.perf_counter() - _t0) * 1000
+        logger.info("RAG fallback prediction completed | latency=%.0fms", _elapsed_ms)
+        return result
 
     @staticmethod
     def _rag_predict(resume_text: str) -> list:

@@ -6,6 +6,7 @@ Handles LinkedIn OAuth, job scraping, and auto-apply functionality
 import os
 import time
 import json
+import logging
 from typing import List, Dict, Optional
 from datetime import datetime, timedelta
 from selenium import webdriver
@@ -16,6 +17,8 @@ from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 import google.generativeai as genai
 from app.core.config import settings
+
+logger = logging.getLogger(__name__)
 
 class LinkedInService:
     """Service for LinkedIn integration and automation"""
@@ -149,13 +152,13 @@ class LinkedInService:
                     if job_data:
                         jobs.append(job_data)
                 except Exception as e:
-                    print(f"Error extracting job: {e}")
+                    logger.warning("Error extracting job: %s", e)
                     continue
             
             return jobs
             
         except Exception as e:
-            print(f"Error searching jobs: {e}")
+            logger.error("Error searching jobs: %s", e)
             return []
     
     def _extract_job_data(self, card) -> Optional[Dict]:
@@ -266,7 +269,7 @@ class LinkedInService:
                         break
                         
                 except Exception as e:
-                    print(f"Error in form step {current_step}: {e}")
+                    logger.warning("Error in form step %d: %s", current_step, e)
                     break
             
             # Check if application was successful
@@ -326,7 +329,7 @@ class LinkedInService:
             return cover_letter
             
         except Exception as e:
-            print(f"Error generating cover letter: {e}")
+            logger.error("Error generating cover letter: %s", e)
             return ""
     
     def auto_apply_batch(self, 
@@ -387,7 +390,7 @@ class LinkedInService:
                 time.sleep(30)  # 30 seconds between applications
                 
             except Exception as e:
-                print(f"Error applying to {job['title']}: {e}")
+                logger.error("Error applying to %s: %s", job['title'], e)
                 results['failed'] += 1
                 continue
         

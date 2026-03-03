@@ -7,6 +7,9 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 from app.api.deps import get_current_user, get_db
 from app.models.user import User
@@ -359,4 +362,4 @@ def run_auto_apply(user_id: int, resume_data: dict, search_params: dict, db: Ses
         linkedin_service.close()
         
     except Exception as e:
-        print(f"Error in auto-apply background task: {e}")
+        logger.error("Error in auto-apply background task: %s", e)

@@ -76,3 +76,15 @@ class SkillOntology:
         missing = [s for s in required if s.lower() not in user_skills_lower]
         
         return missing[:5] # Return top 5 gaps
+
+    @staticmethod
+    def get_cluster_skills(cluster: str) -> List[str]:
+        """Return ALL skills for a given cluster (flat list)."""
+        if cluster not in SkillOntology.CLUSTERS:
+            # Fallback: return general skills
+            return ["Python", "Java", "Git", "Linux", "SQL", "Algorithms", "Data Structures"]
+
+        skills = []
+        for cat_skills in SkillOntology.CLUSTERS[cluster].values():
+            skills.extend(cat_skills)
+        return skills
