@@ -15,38 +15,87 @@ export default function Login() {
     const navigate = useNavigate();
 
     const [backendStatus, setBackendStatus] = useState('unknown');
+    const [wakeAttempt, setWakeAttempt] = useState(0);
 
-    React.useEffect(() => {
-        const checkHealth = async () => {
+    const checkHealth = async () => {
+        setBackendStatus('unknown');
+        setWakeAttempt(0);
+
+        const baseUrl = getApiBaseUrl();
+        const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+        const isBaseUrlDefault = baseUrl === '/api/v1';
+
+        if (isProduction && isBaseUrlDefault) {
+            setBackendStatus('misconfigured');
+            return;
+        }
+
+        // Derive the root URL from the API base URL for the /ping endpoint
+        // e.g. "https://xyz.onrender.com/api/v1" -> "https://xyz.onrender.com"
+        const rootUrl = baseUrl.replace(/\/api\/v1\/?$/, '');
+        const pingUrl = `${rootUrl}/ping`;
+
+        const MAX_RETRIES = 6;       // 6 retries × 15s = 90s max wait
+        const RETRY_DELAY_MS = 15000; // 15 seconds between retries
+        const PING_TIMEOUT_MS = 12000; // 12 second timeout per attempt
+
+        for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
             try {
-                const baseUrl = getApiBaseUrl();
-                const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
-                const isBaseUrlDefault = baseUrl === '/api/v1';
-
-                if (isProduction && isBaseUrlDefault) {
-                    setBackendStatus('misconfigured');
-                    return;
-                }
-
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 12000);
+                const timeoutId = setTimeout(() => controller.abort(), PING_TIMEOUT_MS);
 
-                const response = await fetch(`${baseUrl}/healthz`, { signal: controller.signal });
+                const response = await fetch(pingUrl, { signal: controller.signal });
                 clearTimeout(timeoutId);
 
-                const contentType = response.headers.get('content-type');
-                if (response.ok && contentType && contentType.includes('application/json')) {
+                if (response.ok) {
+                    // Backend is alive — now do a full health check
                     setBackendStatus('online');
+                    console.log(`AI System: Neural link established (attempt ${attempt})`);
+
+                    // Optional: do a background deep health check (non-blocking)
+                    try {
+                        const deepResp = await fetch(`${baseUrl}/healthz`);
+                        if (deepResp.ok) {
+                            const data = await deepResp.json();
+                            if (data.status === 'degraded') {
+                                setBackendStatus('warming up');
+                                // Re-check in 15s
+                                setTimeout(async () => {
+                                    try {
+                                        const recheck = await fetch(`${baseUrl}/healthz`);
+                                        if (recheck.ok) setBackendStatus('online');
+                                    } catch { /* ignore */ }
+                                }, 15000);
+                            }
+                        }
+                    } catch { /* deep check failed, but ping succeeded — still online */ }
+
+                    return; // Success — exit retry loop
                 } else {
-                    setBackendStatus(`offline (${response.status})`);
-                    console.warn('AI System: Link responded but returned non-AI data.', response.status);
+                    throw new Error(`HTTP ${response.status}`);
                 }
             } catch (err) {
-                const innerMsg = err.name === 'AbortError' ? 'Timeout' : err.message;
-                setBackendStatus(`offline (${innerMsg})`);
-                console.error('AI System: Neural link unreachable.', err);
+                const isTimeout = err.name === 'AbortError';
+                console.warn(`AI System: Ping attempt ${attempt}/${MAX_RETRIES} failed: ${isTimeout ? 'Timeout' : err.message}`);
+
+                if (attempt === 1) {
+                    setBackendStatus('waking up');
+                }
+                setWakeAttempt(attempt);
+
+                if (attempt < MAX_RETRIES) {
+                    // Wait before retrying
+                    await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+                } else {
+                    // All retries exhausted
+                    setBackendStatus('offline (server sleeping)');
+                    console.error('AI System: Backend did not respond after all retries.');
+                }
             }
-        };
+        }
+    };
+
+    React.useEffect(() => {
         checkHealth();
     }, []);
 
@@ -110,16 +159,26 @@ export default function Login() {
                             </h1>
                             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full">
                                 <span className={`w-1.5 h-1.5 rounded-full ${backendStatus === 'online' ? 'bg-emerald-500 animate-pulse' :
-                                    backendStatus === 'offline' ? 'bg-rose-500' :
-                                        backendStatus === 'misconfigured' ? 'bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.5)]' :
-                                            'bg-indigo-500 animate-ping'
+                                    backendStatus.startsWith('offline') ? 'bg-rose-500' :
+                                        backendStatus === 'waking up' ? 'bg-amber-400 animate-bounce' :
+                                            backendStatus === 'warming up' ? 'bg-sky-400 animate-pulse' :
+                                                backendStatus === 'misconfigured' ? 'bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.5)]' :
+                                                    'bg-indigo-500 animate-ping'
                                     }`}></span>
                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">
-                                    System Status: {backendStatus === 'unknown' ? 'INITIALIZING...' : backendStatus.toUpperCase()}
-                                    {backendStatus !== 'online' && (
-                                        <span className="ml-2 text-slate-500 opacity-70">
-                                            (Target: {getApiBaseUrl()})
-                                        </span>
+                                    System Status: {
+                                        backendStatus === 'unknown' ? 'INITIALIZING...' :
+                                            backendStatus === 'waking up' ? `WAKING UP (${wakeAttempt}/6)...` :
+                                                backendStatus === 'warming up' ? 'WARMING UP MODELS...' :
+                                                    backendStatus.toUpperCase()
+                                    }
+                                    {backendStatus.startsWith('offline') && (
+                                        <button
+                                            onClick={(e) => { e.preventDefault(); checkHealth(); }}
+                                            className="ml-3 text-indigo-400 hover:text-indigo-300 font-black underline underline-offset-4 transition-colors"
+                                        >
+                                            RECONNECT
+                                        </button>
                                     )}
                                 </span>
                             </div>

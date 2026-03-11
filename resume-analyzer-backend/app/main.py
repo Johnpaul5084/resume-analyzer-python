@@ -2,6 +2,7 @@ import os
 import sys
 import time
 from pathlib import Path
+import urllib.request
 from dotenv import load_dotenv
 
 # Force load .env from backend root (one level up from app/)
@@ -193,7 +194,37 @@ def startup_event():
 
     threading.Thread(target=preload_all, daemon=True).start()
 
+    # ── Self-Ping Keep-Alive (prevents Render Free Tier from sleeping) ────────
+    KEEP_ALIVE_URL = os.getenv("KEEP_ALIVE_URL", "")  # e.g. https://resume-analyzer-python-1.onrender.com
+    KEEP_ALIVE_INTERVAL = int(os.getenv("KEEP_ALIVE_INTERVAL", "840"))  # 14 minutes
+
+    if KEEP_ALIVE_URL:
+        def self_ping():
+            ping_url = KEEP_ALIVE_URL.rstrip("/") + "/ping"
+            logger.info(f"🏓 Keep-alive enabled: pinging {ping_url} every {KEEP_ALIVE_INTERVAL}s")
+            while True:
+                time.sleep(KEEP_ALIVE_INTERVAL)
+                try:
+                    req = urllib.request.Request(ping_url, method="GET")
+                    with urllib.request.urlopen(req, timeout=10) as resp:
+                        logger.info(f"🏓 Keep-alive ping OK: {resp.status}")
+                except Exception as e:
+                    logger.warning(f"🏓 Keep-alive ping failed: {e}")
+
+        threading.Thread(target=self_ping, daemon=True).start()
+    else:
+        logger.info("ℹ️ KEEP_ALIVE_URL not set. Self-ping disabled. "
+                    "Set KEEP_ALIVE_URL env var to prevent Render sleep.")
+
+
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+
+# ── Lightweight ping (responds instantly, even during cold start) ─────────
+@app.get("/ping")
+def ping():
+    """Ultra-lightweight liveness probe. No DB, no model checks."""
+    return {"pong": True}
 
 
 @app.get("/")
