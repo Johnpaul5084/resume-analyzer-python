@@ -25,30 +25,48 @@ class AIRawParser:
             elif file_type in ['docx', 'doc']:
                 try:
                     doc = docx.Document(io.BytesIO(content))
-                    extracted_text = "\n".join([para.text for para in doc.paragraphs])
+                    # Extract from both paragraphs AND tables (often used in resumes)
+                    parts = []
+                    for para in doc.paragraphs:
+                        if para.text.strip():
+                            parts.append(para.text)
+                    
+                    for table in doc.tables:
+                        for row in table.rows:
+                            for cell in row.cells:
+                                if cell.text.strip():
+                                    parts.append(cell.text)
+                                    
+                    extracted_text = "\n".join(parts)
                 except Exception as e:
                     logger.error(f"Error parsing DOCX: {e}")
-                    raise ValueError("Failed to parse DOCX file.")
+                    raise ValueError(f"Failed to parse DOCX file structure: {str(e)}")
             
             elif file_type in ['jpg', 'jpeg', 'png']:
                 # New: Support for image-based resumes
                 extracted_text = await OCRService.extract_text_from_bytes(content, file_type)
 
             elif file_type == 'txt':
-                extracted_text = content.decode('utf-8')
+                try:
+                    extracted_text = content.decode('utf-8')
+                except UnicodeDecodeError:
+                    extracted_text = content.decode('latin-1')
                 
             else:
                 raise ValueError(f"Unsupported file type: {file_type}")
             
-            if not extracted_text.strip():
+            if not extracted_text or not extracted_text.strip():
                 logger.warning(f"No text extracted from {file_type} file.")
+                # We return actual empty string so caller can handle as 400
+                return ""
 
-            # Basic cleanup
-            extracted_text = re.sub(r'\s+', ' ', extracted_text).strip()
+            # Basic cleanup: normalize spaces but preserve some structural newlines
+            extracted_text = re.sub(r'[ \t]+', ' ', extracted_text)
+            extracted_text = re.sub(r'\n{3,}', '\n\n', extracted_text).strip()
             return extracted_text
 
         except Exception as e:
-            logger.error(f"Parser Error: {str(e)}")
+            logger.error(f"Parser Error for {file.filename}: {str(e)}")
             raise e
     
     @staticmethod

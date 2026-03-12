@@ -37,15 +37,30 @@ class OCRService:
         """Extract text from PDF, fallback to OCR if scanned or complex."""
         text = ""
         try:
+            # Stage 1: Primary Extraction (pdfplumber)
             with pdfplumber.open(io.BytesIO(content)) as pdf:
                 for page in pdf.pages:
                     page_text = page.extract_text()
                     if page_text:
                         text += page_text + "\n"
             
+            # Stage 2: Secondary Fallback (pypdf) if primary is weak/empty
+            if len(text.strip()) < 50:
+                try:
+                    from pypdf import PdfReader
+                    reader = PdfReader(io.BytesIO(content))
+                    fallback_text = ""
+                    for page in reader.pages:
+                        fallback_text += page.extract_text() or ""
+                    if len(fallback_text.strip()) > len(text.strip()):
+                        text = fallback_text
+                except Exception:
+                    pass
+
+            # Stage 3: OCR Detection
             # Heuristic: If text is very short but pages exist, it's likely scanned
             if len(text.strip()) < 50:
-                logger.info("Complex or Scanned PDF detected. Triggering High-Fidelity OCR...")
+                logger.info("Scanned PDF detected. Triggering High-Fidelity OCR Pipeline...")
                 return await OCRService._ocr_scanned_pdf(content)
             
             return text
@@ -55,23 +70,31 @@ class OCRService:
 
     @staticmethod
     async def _ocr_scanned_pdf(content: bytes) -> str:
-        """High-Fidelity: Convert PDF pages to high-res images and run Sarvam AI."""
+        """High-Fidelity: Convert PDF pages to images using pypdfium2 (No Poppler needed) and run OCR."""
         try:
-            # High DPI for better OCR accuracy
-            images = convert_from_bytes(content, dpi=300)
+            import pypdfium2 as pdfium
+            pdf = pdfium.PdfDocument(content)
             full_text = ""
-            for img in images:
+            
+            for page in pdf:
+                # Render page to a PIL image
+                # 300 DPI for high-quality OCR
+                bitmap = page.render(scale=4) # scale=4 is approx 288 DPI
+                img = bitmap.to_pil()
+                
                 img_byte_arr = io.BytesIO()
                 img.save(img_byte_arr, format='PNG')
                 img_bytes = img_byte_arr.getvalue()
                 
-                # Process each page with Vision
+                # Process with AI Vision or Tesseract
                 page_text = await OCRService._process_image_bytes(img_bytes)
                 full_text += page_text + "\n"
                 
+                bitmap.close()
+            pdf.close()
             return full_text
         except Exception as e:
-            logger.error(f"High-Res OCR Error: {e}")
+            logger.error(f"pypdfium2 OCR Pipeline Error: {e}")
             return ""
 
     @staticmethod

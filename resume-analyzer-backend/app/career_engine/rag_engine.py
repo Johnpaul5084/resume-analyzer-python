@@ -1,4 +1,3 @@
-from app.services.ai_rewrite_service import AIRewriteService
 import numpy as np
 import json
 import os

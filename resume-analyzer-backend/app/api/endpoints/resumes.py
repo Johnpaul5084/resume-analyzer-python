@@ -144,10 +144,18 @@ async def upload_resume(
     try:
         extracted_text = await AIRawParser.extract_text(file)
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Extraction Error: {str(e)}")
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Neural extraction failed: {str(e)}. Please ensure the file is not password-protected and contains readable text."
+        )
         
     if not extracted_text:
-         raise HTTPException(status_code=400, detail="Could not extract text from file.")
+         logger.warning(f"File {file.filename} yielded zero text.")
+         raise HTTPException(
+            status_code=400, 
+            detail="The system could not detect any readable text in this document. If this is a scanned image, ensure the quality is clear."
+         )
 
     # 2. Analyze Resume
     # Smart detection: short input = role name; long input = full job description

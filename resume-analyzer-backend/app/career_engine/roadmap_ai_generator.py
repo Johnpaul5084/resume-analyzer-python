@@ -87,34 +87,24 @@ Keep the tone encouraging, professional, and specific. Do NOT use ** or ### form
                 logger.error(f"OpenAI roadmap failed: {e}")
 
         # ── Static Fallback ────────────────────────────────────
-        skills_str = ', '.join(missing_skills[:3]) if missing_skills else 'core fundamentals'
-        return f"""CAREER ROADMAP: {role}
-
-MONTH 1-2: Foundation & Core Skills
-- Focus on learning: {skills_str}
-- Free Resources: freeCodeCamp, Coursera (audit mode), YouTube tutorials
-- Mini Project: Build a small {role.lower()}-related project to apply basics
-- Practice DSA: Solve 30+ easy problems on LeetCode
-
-MONTH 3-4: Intermediate Mastery
-- Deep dive into: {', '.join(missing_skills[1:4]) if len(missing_skills) > 1 else 'advanced concepts'}
-- Build a real-world project that solves an actual problem
-- Deploy it on cloud (AWS/Render/Vercel)
-- Start contributing to open source projects on GitHub
-
-MONTH 5-6: Job-Ready Polish
-- Build one impressive portfolio project showcasing {role} skills
-- Prepare for technical interviews:
-  * Data Structures & Algorithms (LeetCode medium/hard)
-  * System Design fundamentals
-  * Behavioral questions using STAR method
-- Optimize your resume with quantified achievements
-- Update LinkedIn profile with projects and certifications
-- Apply to 10-15 jobs per week on LinkedIn, Naukri, and Indeed
-
-DAILY SCHEDULE (Recommended):
-- 2 hours: Coding practice / Project building
-- 1 hour: DSA / Interview prep
-- 30 minutes: Learning new concepts / Reading tech blogs
-
-Remember: Consistency beats intensity. Show up every day!"""
+        from app.career_engine.roadmap_generator import RoadmapGenerator
+        offline_roadmap = RoadmapGenerator.generate_roadmap(role)
+        
+        text = f"CAREER ROADMAP: {role.upper()}\n\n"
+        for item in offline_roadmap:
+            text += f"{item['period'].upper()}: {item['focus']}\n"
+            # Add some context for missing skills if they match the focus
+            matching_skills = [s for s in missing_skills if s.lower() in item['focus'].lower()]
+            if matching_skills:
+                text += f"- Priority Gap Fix: {', '.join(matching_skills)}\n"
+            else:
+                text += f"- Key Focus: Deep dive into core competencies for {role}\n"
+            text += "\n"
+            
+        text += "DAILY SCHEDULE (Recommended):\n"
+        text += "- 2 hours: Coding practice / Project building\n"
+        text += "- 1 hour: DSA / Interview prep\n"
+        text += "- 30 minutes: Learning new concepts / Reading tech blogs\n\n"
+        text += "Remember: Consistency beats intensity. Stay focused on the goal!"
+        
+        return text.strip()

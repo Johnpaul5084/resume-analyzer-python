@@ -5,7 +5,7 @@ Application Model - Track job applications
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text
 from sqlalchemy.orm import relationship
 from datetime import datetime
-from app.db.session import Base
+from app.db.base import Base
 
 
 class Application(Base):
@@ -38,4 +38,4 @@ class Application(Base):
     notes = Column(Text)
     
     # Relationships
-    user = relationship("User", back_populates="applications")
+    user = relationship("User", backref="applications")

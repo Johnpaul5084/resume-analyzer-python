@@ -11,8 +11,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-from app.api.deps import get_current_user, get_db
-from app.models.user import User
+from app.api.dependencies import get_current_user, get_db
+from app.models.all_models import User
 from app.models.application import Application
 from app.services.linkedin_service import LinkedInService
 from app.schemas.linkedin import (
@@ -53,11 +53,6 @@ def connect_linkedin(
                 'cookies': result['cookies'],
                 'connected_at': datetime.now().isoformat()
             }
-            
-            # Update user's LinkedIn connection status in DB
-            current_user.linkedin_connected = True
-            current_user.linkedin_email = request.email
-            db.commit()
             
             return LinkedInLoginResponse(
                 success=True,
@@ -139,8 +134,9 @@ def auto_apply(
             )
         
         # Get user's resume data
+        from app.models.all_models import Resume
         resume = db.query(Resume).filter(
-            Resume.user_id == current_user.id,
+            Resume.owner_id == current_user.id,
             Resume.id == request.resume_id
         ).first()
         
@@ -149,14 +145,14 @@ def auto_apply(
         
         # Prepare resume data for application
         resume_data = {
-            'text': resume.text,
+            'text': resume.content_text,
             'email': current_user.email,
-            'phone': current_user.phone or '',
+            'phone': '',
             'first_name': current_user.full_name.split()[0] if current_user.full_name else '',
             'last_name': ' '.join(current_user.full_name.split()[1:]) if current_user.full_name else '',
             'location': request.location or '',
-            'linkedin_url': current_user.linkedin_url or '',
-            'website': current_user.website or ''
+            'linkedin_url': '',
+            'website': ''
         }
         
         # Start auto-apply in background
@@ -189,8 +185,9 @@ def generate_cover_letter(
     """
     try:
         # Get user's resume
+        from app.models.all_models import Resume
         resume = db.query(Resume).filter(
-            Resume.user_id == current_user.id,
+            Resume.owner_id == current_user.id,
             Resume.id == request.resume_id
         ).first()
         
@@ -201,7 +198,7 @@ def generate_cover_letter(
         cover_letter = linkedin_service.generate_cover_letter(
             job_title=request.job_title,
             company=request.company,
-            resume_text=resume.text
+            resume_text=resume.content_text
         )
         
         return CoverLetterResponse(
@@ -298,11 +295,6 @@ def disconnect_linkedin(
         # Remove session
         if current_user.id in linkedin_sessions:
             del linkedin_sessions[current_user.id]
-        
-        # Update user
-        current_user.linkedin_connected = False
-        current_user.linkedin_email = None
-        db.commit()
         
         return {
             'success': True,

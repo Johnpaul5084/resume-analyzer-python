@@ -155,17 +155,21 @@ def validate_file_content(content: bytes, filename: str) -> None:
     Validate uploaded file content beyond just extension/size checks.
     Raises ValueError for suspicious content.
     """
-    # Check for embedded scripts or executable patterns
+    # Check for embedded script execution patterns (more specific to avoid skill false positives)
     suspicious_patterns = [
-        b'<script', b'javascript:', b'<?php', b'<%',
-        b'\x4d\x5a',  # MZ header (Windows executable)
-        b'\x7fELF',   # ELF header (Linux executable)
+        b'<script>', b'alert(', b'eval(', b'window.location', b'<?php', b'<%',
     ]
-    content_lower = content[:4096].lower()  # Only check first 4KB
+    content_lower = content[:4096].lower()
 
     for pattern in suspicious_patterns:
         if pattern.lower() in content_lower:
-            raise ValueError(f"File contains suspicious content (possible embedded code)")
+            raise ValueError(f"File contains suspicious executable patterns ({pattern.decode(errors='ignore')[:10]})")
+
+    # Binary Header Check (ONLY at the absolute start of the file)
+    if content.startswith(b'\x4d\x5a'): # MZ header (Windows EXE)
+        raise ValueError("Security: Windows executable files are not permitted.")
+    if content.startswith(b'\x7fELF'): # ELF header (Linux EXE)
+        raise ValueError("Security: Linux executable files are not permitted.")
 
     # Validate MIME type for PDFs
     if filename.lower().endswith('.pdf') and not content[:5] == b'%PDF-':
