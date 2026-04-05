@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "buildCommand": "cd resume-analyzer-frontend && npm install && npm run build",
+  "outputDirectory": "resume-analyzer-frontend/dist",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://your-backend.onrender.com/api/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "resume-analyzer-frontend/$1"
+    }
+  ]
+}
