@@ -8,6 +8,8 @@ import ResumeDetail from './components/ResumeDetail';
 import ResumeOptimizer from './components/ResumeOptimizer';
 import CareerMentor from './components/CareerMentor';
 import MarketInsights from './components/MarketInsights';
+import SmartPipeline from './components/SmartPipeline';
+import AutoApply from './components/AutoApply';
 import DashboardLayout from './components/layout/DashboardLayout';
 import './index.css';
 
@@ -69,6 +71,22 @@ function App() {
                         element={
                             <PrivateRoute>
                                 <CareerMentor />
+                            </PrivateRoute>
+                        }
+                    />
+                    <Route
+                        path="/pipeline"
+                        element={
+                            <PrivateRoute>
+                                <SmartPipeline />
+                            </PrivateRoute>
+                        }
+                    />
+                    <Route
+                        path="/auto-apply"
+                        element={
+                            <PrivateRoute>
+                                <AutoApply />
                             </PrivateRoute>
                         }
                     />

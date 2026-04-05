@@ -101,7 +101,7 @@ export const jobAPI = {
 
 // AI Mentor API (Unified)
 export const mentorAPI = {
-    chat: (question, resumeId = null) => api.post('/ai-mentor/chat', { question, resume_id: resumeId }),
+    chat: (question, resumeId = null, chatHistory = null) => api.post('/ai-mentor/chat', { question, resume_id: resumeId, chat_history: chatHistory }),
     getInsight: (resumeText, skills, targetRole = null) =>
         api.post('/ai-mentor/insight', {
             resume_text: resumeText,
@@ -118,6 +118,54 @@ export const rewriteAPI = {
         api.post('/ai-rewrite/transform', { resume_text: resumeText, job_description: jobDescription, mode }),
     enhanceGrammar: (text) =>
         api.post('/ai-rewrite/enhance-grammar', { text }),
+};
+
+// 🏢 Company ATS Simulator API (UNIQUE)
+export const companyAtsAPI = {
+    scoreAll: (resumeText, targetRole = 'Software Engineer', companies = null) =>
+        api.post('/ai-rewrite/company-ats', { resume_text: resumeText, target_role: targetRole, companies }),
+    scoreSingle: (resumeText, companyId, targetRole = 'Software Engineer') =>
+        api.post('/ai-rewrite/company-ats/single', { resume_text: resumeText, company_id: companyId, target_role: targetRole }),
+    listCompanies: () =>
+        api.get('/ai-rewrite/company-ats/companies'),
+};
+
+// 📝 Self-Contained Resume Builder (OUR OWN TECHNOLOGY — NO OVERLEAF)
+export const resumeBuilderAPI = {
+    build: (resumeText, templateId = 'classic', targetRole = 'Software Engineer') =>
+        api.post('/ai-rewrite/build-resume', { resume_text: resumeText, template_id: templateId, target_role: targetRole }),
+    getTemplates: () =>
+        api.get('/ai-rewrite/templates'),
+    exportLatex: (resumeText, templateId = 'classic', targetRole = 'Software Engineer') =>
+        api.post('/ai-rewrite/latex', { resume_text: resumeText, template_id: templateId, target_role: targetRole }),
+};
+
+// 🎯 AI Interview Prep Engine (UNIQUE)
+export const interviewPrepAPI = {
+    generate: (resumeText, targetRole = 'Software Engineer') =>
+        api.post('/ai-rewrite/interview-prep', { resume_text: resumeText, target_role: targetRole }),
+};
+
+// 📊 Resume Strength Radar (UNIQUE)
+export const strengthRadarAPI = {
+    analyze: (resumeText, targetRole = 'Software Engineer') =>
+        api.post('/ai-rewrite/strength-radar', { resume_text: resumeText, target_role: targetRole }),
+};
+
+// ⚡ Full Pipeline API (OUR OWN TECH — does everything in one call)
+export const pipelineAPI = {
+    run: (resumeText, targetRole, templateId = 'classic', companies = null, mode = 'ATS') =>
+        api.post('/ai-rewrite/pipeline', { resume_text: resumeText, target_role: targetRole, template_id: templateId, companies, mode }, { timeout: 180000 }),
+};
+
+// 🚀 Auto-Apply Engine (12+ PLATFORMS — UNIQUE)
+export const autoApplyAPI = {
+    searchAndApply: (resumeText, targetRole, location = 'India', maxJobs = 10) =>
+        api.post('/ai-rewrite/auto-apply', { resume_text: resumeText, target_role: targetRole, location, max_jobs: maxJobs }, { timeout: 120000 }),
+    applyLinks: (resumeText, targetRole, location = 'India', platforms = null) =>
+        api.post('/ai-rewrite/apply-links', { resume_text: resumeText, target_role: targetRole, location, platforms }),
+    getPlatforms: () =>
+        api.get('/ai-rewrite/platforms'),
 };
 
 // Credit Status API

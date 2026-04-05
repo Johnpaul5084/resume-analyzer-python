@@ -1,13 +1,14 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Upload, MessageSquare, Edit3, TrendingUp, User, LogOut } from 'lucide-react';
+import { LayoutDashboard, Upload, MessageSquare, Edit3, TrendingUp, User, LogOut, Zap, Send } from 'lucide-react';
 
 const navConfig = [
     { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
     { name: "Analyze Resume", path: "/upload", icon: Upload },
+    { name: "Smart Pipeline", path: "/pipeline", icon: Zap, highlight: true },
+    { name: "Auto-Apply", path: "/auto-apply", icon: Send, highlight: true },
     { name: "Career Mentor", path: "/mentor", icon: MessageSquare },
     { name: "Market Insights", path: "/insights", icon: TrendingUp },
-    { name: "Profile", path: "/dashboard", icon: User },
 ];
 
 export default function Sidebar() {

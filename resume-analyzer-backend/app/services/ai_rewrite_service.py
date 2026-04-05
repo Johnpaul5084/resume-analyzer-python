@@ -114,36 +114,44 @@ No explanation, no quotes, just the role name."""
         def _sync_rewrite():
             model = _get_gemini_model()
 
-            if job_description:
-                prompt = f"""You are a senior resume consultant at a top-tier career coaching firm specializing in FAANG and Fortune 500 placements.
+            mode_instruction = ""
+            if mode == "Creative":
+                mode_instruction = "11. MODE: CREATIVE. While maintaining absolute factual truth, use highly engaging narrative language, impactful vocabulary, and heavily emphasize the candidate's unique value proposition and leadership potential."
+            else:
+                mode_instruction = "11. MODE: ATS. Strongly prioritize exact keyword matches from the target role/JD. Keep language direct, focus purely on hard technical competencies, and maximize metric visibility."
 
-Rewrite this resume to PERFECTLY align with the Job Description below. This is for a real student looking for jobs — make the rewrite genuine and impactful.
+            if job_description:
+                prompt = f"""You are the world's top Executive Resume Writer and ATS Technical Recruiter for FAANG/MAANG, Fortune 500, and top-tier Tech MNCs.
+
+Your task is to comprehensively RE-ENGINEER this resume to achieve a 100% ATS match for the specific Job Description provided, while remaining STRICTLY FACTUAL to the candidate's original history. 
 
 JOB DESCRIPTION:
-{job_description[:2000]}
+{job_description[:3000]}
 
 ORIGINAL RESUME CONTENT:
 {text[:4000]}
 
-REWRITE RULES (CRITICAL — follow precisely):
-1. Mirror the EXACT keywords and phrases from the Job Description naturally throughout the resume.
-2. Every experience bullet MUST use the STAR method: Action Verb + What you did + How you did it + Quantified Result.
-   Example: "Engineered a microservices architecture using Spring Boot and Docker, reducing deployment time by 40% across 12 production services."
-3. Add REALISTIC quantified achievements — percentages, numbers, team sizes, dollar amounts, time saved.
-   - Do NOT use generic numbers. Make them believable for a student (e.g., "Improved page load speed by 28%" not "Generated $50M revenue").
-4. Professional Summary: Write a compelling 3-sentence summary highlighting the top 3 reasons this candidate fits the JD.
-5. Skills Section: Reorganize skills to prioritize JD-relevant ones first. Group by category (Languages, Frameworks, Tools, Cloud, etc.).
-6. Format: Clean plain text. NO LaTeX, NO **, NO ###, NO markdown, NO special symbols.
-7. Keep ALL sections: Professional Summary, Technical Skills, Work Experience, Projects, Education, Certifications (if any).
-8. Fix ALL grammar and spelling errors.
-9. Use strong action verbs: Architected, Engineered, Automated, Optimized, Spearheaded, Led, Deployed, Designed, Implemented, Streamlined.
-10. For each project, clearly mention the tech stack used and the impact/outcome.
+REWRITE RULES (CRITICAL & NON-NEGOTIABLE):
+1. STRICT FACTUAL ACCURACY: You are forbidden from inventing companies, degrees, roles, or entirely fake projects. You MUST ONLY elevate, rephrase, and extract the maximum possible value from the candidate's actual provided experience.
+2. HYPER-TARGETED ATS ALIGNMENT: Analyze the Job Description deeply. Identify the core skills, technologies, and phrasing used by this specific company. Mirror these EXACT keywords naturally throughout the candidate's experience. If the JD requires "Python" and the candidate used it, ensure Python is front-and-center.
+3. DEEP, IMPACT-DRIVEN REWRITE: Do not just copy the old bullets. Completely rewrite every bullet point using the Google/FAANG XYZ formula: "Accomplished [X] as measured by [Y], by doing [Z]".
+   - ALWAYS start with a potent action verb (Architected, Engineered, Spearheaded, Optimized, Deployed).
+   - NEVER use weak verbs (Helped, Worked on, Responsible for).
+4. REALISTIC QUANTIFICATION: Add realistic metrics (percentages, time saved, efficiency improved) ONLY if they logically align with the actual experience described. Do not use absurd numbers for junior roles.
+5. EXECUTIVE SUMMARY: Write a commanding 3-sentence professional summary that directly positions the candidate as the perfect solution to the problems outlined in the JD.
+6. SKILLS OPTIMIZATION: Rebuild the Skills section. Group them logically (Languages, Frameworks, Cloud, Tools). The skills requested in the JD MUST be listed first.
+7. FORMATTING STRICTURES: Return CLEAN PLAIN TEXT ONLY.
+   - NO Markdown formatting (no **, no ##). 
+   - NO LaTeX.
+   - NO HTML.
+   - NO tables or weird characters (bullet points should use standard hyphens or plain bullets).
+8. FLAWLESS EXECUTION: Zero grammar errors. Zero typos. Perfect professional corporate tone.
 
-OUTPUT: Return the COMPLETE rewritten resume text only. No introduction, no commentary, no headers like "Here is your rewritten resume"."""
+OUTPUT: Return the COMPLETE, aggressively optimized resume text. DO NOT include intros, commentary, or pleasantries. Jump straight into the resume content."""
             else:
-                prompt = f"""You are a senior resume consultant who has placed 500+ candidates at FAANG, top MNCs, and Big 4 companies. 
+                prompt = f"""You are an elite AI resume consultant who has placed 500+ candidates at FAANG, top MNCs, and Big 4 companies. 
 
-Rewrite this resume specifically for a **{target_role}** role at a {company_type}. This is for a real student — make every word count.
+Perform a DEEP REWRITE of this resume specifically for a **{target_role}** role at a {company_type}, maintaining absolute factual accuracy.
 
 ORIGINAL RESUME CONTENT:
 {text[:4000]}
@@ -152,23 +160,21 @@ TARGET ROLE: {target_role}
 COMPANY TYPE: {company_type}
 
 REWRITE RULES (CRITICAL — follow precisely):
-1. Professional Summary: Write a powerful 3-sentence summary positioning the candidate as an ideal {target_role}. 
-   Highlight relevant experience, key technical strengths, and career passion.
-2. Technical Skills: Reorder to prioritize skills most critical for {target_role} first.
-   - {target_role} top skills should appear first
+1. STRICT FACTUAL ACCURACY: Do NOT invent experiences, companies, projects, or degrees. Only enhance what is provided in the ORIGINAL RESUME CONTENT.
+2. Professional Summary: Write a powerful 3-sentence summary positioning the candidate as an ideal {target_role}. 
+   Highlight actual relevant experience, key technical strengths, and career passion.
+3. Technical Skills: Reorder to prioritize skills most critical for {target_role} first.
    - Group by: Programming Languages | Frameworks & Libraries | Databases | Tools & Platforms | Cloud & DevOps
-3. Experience Bullets: Rewrite EVERY bullet using STAR format with quantified results.
+4. Experience Bullets: Do a DEEP REWRITE of EVERY bullet using STAR format with quantified results.
    - Action Verb + Task Description + Technology Used + Measurable Result
-   - Example: "Developed a RESTful API using FastAPI and PostgreSQL, serving 15K+ daily requests with 99.9% uptime."
-   - Use REALISTIC metrics a student would have (not enterprise-scale numbers).
-4. Projects: Emphasize projects that demonstrate {target_role} competencies.
-   - Clearly state: Problem → Approach → Tech Stack → Outcome
-5. If skills relevant to {target_role} are implied but not listed, add them naturally.
-6. Fix ALL grammar mistakes, awkward phrasing, and typos.
-7. Use ATS-friendly formatting: clear section headers, consistent bullet style, no tables or columns.
-8. Plain professional English only — NO LaTeX, **, ###, or special symbols.
-9. Ensure the resume passes ATS scanners used by {company_type} companies.
+   - Use REALISTIC metrics based on the original content.
+5. Projects: Emphasize projects that demonstrate {target_role} competencies based on factual data.
+6. If skills relevant to {target_role} are clearly implied by their work but not explicitly listed, add them naturally.
+7. Fix ALL grammar mistakes, awkward phrasing, and typos.
+8. Use ATS-friendly formatting: clear section headers, consistent bullet style, no tables or columns.
+9. Plain professional English only — NO LaTeX, **, ###, or special symbols.
 10. Add a "Key Achievements" or "Highlights" section if the candidate has notable accomplishments.
+{mode_instruction}
 
 OUTPUT: Return the COMPLETE rewritten resume text only. No introduction or commentary."""
 
@@ -341,3 +347,36 @@ Return ONLY valid JSON:
         except Exception as e:
             logger.error("Validate fit error: %s", e)
             return {"error": str(e), "target_role": target_role}
+
+    @staticmethod
+    async def grammar_enhance(text: str) -> str:
+        """
+        AI Grammar & Clarity Enhancer.
+        Fixes grammar, improves professional tone, and enhances readability
+        while preserving technical terms and resume structure.
+        """
+        from app.core.ai_provider import AIProvider
+
+        prompt = f"""Enhance this resume text for grammar, clarity, and professional tone.
+
+RULES:
+- Fix all grammar and spelling mistakes
+- Improve sentence structure for clarity
+- Use strong action verbs (Led, Developed, Implemented, Optimized)
+- Preserve ALL technical terms exactly (e.g., React, Kubernetes, AWS)
+- Keep the same overall structure and sections
+- Do NOT add new information or invent anything
+- Do NOT add any commentary — return ONLY the enhanced text
+
+TEXT:
+{text[:5000]}"""
+
+        result = await AIProvider.generate(
+            prompt=prompt,
+            system_prompt="You are an expert resume editor. Enhance grammar and clarity. Return ONLY the enhanced text, nothing else.",
+            max_tokens=2000,
+            temperature=0.3,
+            timeout=45,
+        )
+
+        return result if result.strip() else text

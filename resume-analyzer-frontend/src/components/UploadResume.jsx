@@ -42,7 +42,7 @@ export default function UploadResume() {
             const response = await resumeAPI.upload(formData);
             navigate(`/resume/${response.data.id}`);
         } catch (err) {
-            setError(err.response?.data?.detail || 'Upload failed');
+            setError(err.response?.data?.error || err.response?.data?.detail || 'Upload failed');
         } finally {
             setUploading(false);
         }
@@ -120,13 +120,24 @@ export default function UploadResume() {
                                 </div>
                                 <div className="space-y-4">
                                     <label className="text-[10px] font-black text-indigo-400 uppercase tracking-widest px-1">Alignment Context (Optional)</label>
-                                    <input
-                                        type="text"
-                                        className="w-full bg-black/40 border border-white/5 px-8 py-5 rounded-3xl text-sm font-medium focus:ring-2 focus:ring-indigo-600/20 transition-all text-white outline-none"
+                                    <select
+                                        className="w-full bg-black/40 border border-white/5 px-8 py-5 rounded-3xl text-sm font-medium focus:ring-2 focus:ring-indigo-600/20 transition-all text-white outline-none appearance-none cursor-pointer"
                                         value={jobDescription}
                                         onChange={(e) => setJobDescription(e.target.value)}
-                                        placeholder="Target MNC / Role Context"
-                                    />
+                                    >
+                                        <option value="" className="bg-slate-900">Target MNC / Role Context</option>
+                                        <option value="Backend Developer" className="bg-slate-900">Backend Developer</option>
+                                        <option value="Frontend Developer" className="bg-slate-900">Frontend Developer</option>
+                                        <option value="Full Stack Developer" className="bg-slate-900">Full Stack Developer</option>
+                                        <option value="Data Scientist" className="bg-slate-900">Data Scientist</option>
+                                        <option value="DevOps Engineer" className="bg-slate-900">DevOps Engineer</option>
+                                        <option value="Machine Learning Engineer" className="bg-slate-900">Machine Learning Engineer</option>
+                                        <option value="Cloud Architect" className="bg-slate-900">Cloud Architect</option>
+                                        <option value="System Administrator" className="bg-slate-900">System Administrator</option>
+                                        <option value="Security Engineer" className="bg-slate-900">Security Engineer</option>
+                                        <option value="Product Manager" className="bg-slate-900">Product Manager</option>
+                                        <option value="UI/UX Designer" className="bg-slate-900">UI/UX Designer</option>
+                                    </select>
                                 </div>
                             </div>
 

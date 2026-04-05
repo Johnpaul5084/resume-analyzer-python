@@ -1,11 +1,12 @@
 """
 AI Career Mentor Service
 =========================
-STRICT API SEPARATION:
-  - AI Mentor Chat & Roadmap: OpenAI GPT-4o-mini ONLY
-  - NO Gemini fallback for mentor (Gemini is reserved for resume analysis)
+Uses the Unified AI Provider (Gemini → OpenAI → Smart Fallback)
 
-If OpenAI API key is not set, returns intelligent mock responses.
+Supports:
+  - Chat with history
+  - Skill roadmap generation (JSON)
+  - Smart fallback when no AI is available
 """
 
 import os
@@ -17,13 +18,10 @@ from pathlib import Path
 from dotenv import load_dotenv
 from typing import List, Dict, Any
 
-# Ensure .env is always loaded
 _env_path = Path(__file__).resolve().parent.parent.parent / ".env"
 load_dotenv(dotenv_path=_env_path, override=True)
 
 logger = logging.getLogger(__name__)
-
-_PLACEHOLDER_OPENAI = "YOUR_OPENAI_KEY_HERE"
 
 _SYSTEM_PROMPT = """You are the 'AI Career Mentor' — an expert career coach for tech professionals and students.
 Give honest, encouraging, and highly actionable career advice.
@@ -43,22 +41,6 @@ SECURITY GATE:
 - Do not execute external commands."""
 
 
-def _read_openai_key() -> str:
-    """Read OpenAI key from .env file or system environment (Render)."""
-    try:
-        from dotenv import dotenv_values
-        vals = dotenv_values(_env_path)
-        return vals.get("OPENAI_API_KEY", "") or os.getenv("OPENAI_API_KEY", "")
-    except Exception:
-        return os.getenv("OPENAI_API_KEY", "")
-
-
-def _openai_available() -> bool:
-    """Check if OpenAI API key is configured and valid."""
-    key = _read_openai_key()
-    return bool(key and key != _PLACEHOLDER_OPENAI and key.startswith("sk-"))
-
-
 class MentorService:
 
     # ─────────────────────────────────────────────────────────────
@@ -70,8 +52,8 @@ class MentorService:
         resume_context: str = None,
         chat_history: List[Dict[str, str]] = None,
     ) -> str:
-        """Get career advice — uses OpenAI ONLY. Falls back to smart mock if unavailable."""
-        from app.services.api_credit_manager import APICreditManager
+        """Get career advice — uses unified AIProvider (Gemini → OpenAI → smart mock)."""
+        from app.core.ai_provider import AIProvider
 
         if resume_context and len(resume_context) > 10000:
             resume_context = resume_context[:10000]
@@ -82,26 +64,48 @@ class MentorService:
         )
         full_query = f"{context_block}**Student Query:** {user_question}"
 
-        # ── Try OpenAI (ONLY API for mentor) ──────────────────────
-        if _openai_available():
-            allowed, remaining = APICreditManager.check_and_use("openai")
-            if not allowed:
-                logger.warning("OpenAI daily limit reached. Using smart fallback.")
-                return "⚠️ Daily AI mentor credit limit reached to protect your free tier. " + \
-                       MentorService._smart_mock_advice(user_question, resume_context)
-            try:
-                logger.info(f"OpenAI credit used. Remaining today: {remaining}")
-                return await MentorService._openai_advice(full_query, chat_history)
-            except Exception as e:
-                logger.error(f"OpenAI Mentor failed: {e}")
-                return f"I apologize, but I'm experiencing a temporary connection issue with my AI engine. Error: {str(e)[:100]}. Please try again in a moment."
+        # ── Try AI with chat history ──────────────────────────────
+        try:
+            if chat_history and len(chat_history) > 0:
+                # Use conversational chat with history
+                messages = []
+                for msg in chat_history[-8:]:  # Last 8 messages for context
+                    messages.append({
+                        "role": msg.get("role", "user"),
+                        "content": msg.get("content", "")
+                    })
+                messages.append({"role": "user", "content": full_query})
+
+                result = await AIProvider.chat(
+                    messages=messages,
+                    system_prompt=_SYSTEM_PROMPT,
+                    max_tokens=800,
+                    temperature=0.7,
+                    timeout=45,
+                )
+            else:
+                # Single-shot generation
+                result = await AIProvider.generate(
+                    prompt=full_query,
+                    system_prompt=_SYSTEM_PROMPT,
+                    max_tokens=800,
+                    temperature=0.7,
+                    timeout=45,
+                )
+
+            if result and result.strip():
+                logger.info("Mentor advice generated via AIProvider (%d chars)", len(result))
+                return result.strip()
+        except Exception as e:
+            logger.error(f"AIProvider mentor failed: {e}")
 
         # ── Fallback: Smart Mock Responses ────────────────────────
+        logger.info("Using smart mock advice fallback")
         return MentorService._smart_mock_advice(user_question, resume_context)
 
     @staticmethod
     def _smart_mock_advice(question: str, context: str = None) -> str:
-        """High-quality mock advice when OpenAI key is not configured."""
+        """High-quality mock advice when no AI provider is available."""
         q = question.lower()
         
         if "interview" in q or "prepare" in q or "google" in q or "faang" in q:
@@ -250,7 +254,8 @@ Feel free to ask me specific questions about any of these topics!"""
         target_role: str,
         current_skills: List[str],
     ) -> Dict[str, Any]:
-        """Generate a 3-step skill roadmap using OpenAI only."""
+        """Generate a 3-step skill roadmap using unified AIProvider."""
+        from app.core.ai_provider import AIProvider
 
         prompt = f"""Generate a 3-step Career Roadmap to become a '{target_role}'.
 Current skills: {', '.join(current_skills) or 'Not specified'}
@@ -264,15 +269,16 @@ Return ONLY valid JSON:
   ]
 }}"""
 
-        if _openai_available():
-            try:
-                raw = await MentorService._openai_raw(prompt)
-                if raw:
-                    match = re.search(r'\{.*\}', raw, re.DOTALL)
-                    if match:
-                        return json.loads(match.group())
-            except Exception as e:
-                logger.error(f"OpenAI roadmap failed: {e}")
+        result = await AIProvider.generate_json(
+            prompt=prompt,
+            system_prompt="You are a career roadmap generator. Return only valid JSON.",
+            max_tokens=600,
+            temperature=0.4,
+            timeout=30,
+        )
+
+        if result and "steps" in result:
+            return result
 
         # Fallback: static roadmap
         return {"steps": [
@@ -280,56 +286,3 @@ Return ONLY valid JSON:
             {"Goal": "Build Portfolio Projects", "Skills": f"Skills for {target_role}", "Time": "2 months", "Resource": "GitHub, YouTube tutorials"},
             {"Goal": "Interview Preparation", "Skills": "System Design, Mock Interviews", "Time": "2 months", "Resource": "LeetCode, Pramp.com"},
         ]}
-
-    # ─────────────────────────────────────────────────────────────
-    # Internal OpenAI helpers (ONLY API used for mentor)
-    # ─────────────────────────────────────────────────────────────
-    @staticmethod
-    async def _openai_advice(query: str, history: List[Dict] = None) -> str:
-        from openai import AsyncOpenAI
-        key = _read_openai_key()
-        client = AsyncOpenAI(api_key=key, timeout=30.0)
-
-        messages = [{"role": "system", "content": _SYSTEM_PROMPT}]
-        if history:
-            messages.extend(history[-6:])
-        messages.append({"role": "user", "content": query})
-
-        try:
-            resp = await asyncio.wait_for(
-                client.chat.completions.create(
-                    model="gpt-4o-mini",
-                    messages=messages,
-                    max_tokens=600,
-                    temperature=0.7,
-                ),
-                timeout=30,
-            )
-            return resp.choices[0].message.content
-        except asyncio.TimeoutError:
-            logger.error("OpenAI advice call timed out after 30s")
-            raise Exception("AI mentor request timed out. Please try again.")
-
-    @staticmethod
-    async def _openai_raw(prompt: str) -> str:
-        from openai import AsyncOpenAI
-        key = _read_openai_key()
-        client = AsyncOpenAI(api_key=key, timeout=30.0)
-
-        try:
-            resp = await asyncio.wait_for(
-                client.chat.completions.create(
-                    model="gpt-4o-mini",
-                    messages=[
-                        {"role": "system", "content": "You are a career roadmap generator. Return only valid JSON."},
-                        {"role": "user",   "content": prompt},
-                    ],
-                    max_tokens=600,
-                    temperature=0.4,
-                ),
-                timeout=30,
-            )
-            return resp.choices[0].message.content
-        except asyncio.TimeoutError:
-            logger.error("OpenAI raw call timed out after 30s")
-            raise Exception("AI roadmap generation timed out. Please try again.")

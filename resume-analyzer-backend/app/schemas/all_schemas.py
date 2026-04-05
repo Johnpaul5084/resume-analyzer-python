@@ -44,6 +44,7 @@ class ResumeInDBBase(ResumeBase):
     id: int
     file_path: Optional[str] = None
     file_type: Optional[str] = None
+    content_text: Optional[str] = None
     ats_score: Optional[float] = 0.0
     parsed_data: Optional[Dict[str, Any]] = None
     score_breakdown: Optional[Dict[str, float]] = None

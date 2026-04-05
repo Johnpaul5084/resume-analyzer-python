@@ -1,99 +1,302 @@
 {
-    "Data Scientist": {
+    "Software Engineer": {
         "category": "IT",
+        "description": "Designs, develops, tests, and maintains software applications using modern programming languages and frameworks.",
         "growth_score": 9.5,
-        "industry": [
-            "FAANG",
-            "Product",
-            "MNC"
-        ],
-        "mandatory_skills": [
-            "Python",
-            "Machine Learning",
-            "Statistics",
-            "SQL"
-        ],
-        "advanced_skills": [
-            "Deep Learning",
-            "MLOps",
-            "Feature Engineering"
-        ],
-        "tools": [
-            "Pandas",
-            "Scikit-learn",
-            "TensorFlow"
-        ],
-        "avg_salary_range": "8-25 LPA"
-    },
-    "Backend Engineer": {
-        "category": "IT",
-        "growth_score": 9.2,
-        "industry": [
-            "FAANG",
-            "Startup",
-            "MNC"
-        ],
-        "mandatory_skills": [
-            "Data Structures",
-            "Algorithms",
-            "Java or Python",
-            "Databases"
-        ],
-        "advanced_skills": [
-            "System Design",
-            "Microservices"
-        ],
-        "tools": [
-            "Spring Boot",
-            "FastAPI",
-            "Node.js"
-        ],
-        "avg_salary_range": "6-30 LPA"
-    },
-    "Mechanical Design Engineer": {
-        "category": "Core",
-        "growth_score": 8.3,
-        "industry": [
-            "Automobile",
-            "Manufacturing"
-        ],
-        "mandatory_skills": [
-            "SolidWorks",
-            "GD&T",
-            "Engineering Drawing"
-        ],
-        "advanced_skills": [
-            "Finite Element Analysis",
-            "ANSYS"
-        ],
-        "tools": [
-            "AutoCAD"
-        ],
-        "avg_salary_range": "4-12 LPA"
+        "industry": ["FAANG", "MNC", "Startup", "Product"],
+        "mandatory_skills": ["Data Structures", "Algorithms", "Python", "Java", "Git", "SQL", "REST API", "System Design"],
+        "advanced_skills": ["Microservices", "CI/CD", "Docker", "Design Patterns", "Distributed Systems", "gRPC"],
+        "tools": ["VS Code", "IntelliJ", "GitHub", "Jira", "Jenkins"],
+        "certifications": ["AWS Certified Developer", "Google Professional Cloud Developer"],
+        "avg_salary_range": "6-30 LPA",
+        "interview_topics": ["DSA", "System Design", "OOP", "Concurrency", "Behavioral"]
     },
     "Full Stack Developer": {
         "category": "IT",
+        "description": "Builds both frontend and backend of web applications with modern JavaScript/TypeScript stack.",
         "growth_score": 9.4,
-        "industry": [
-            "Startup",
-            "Product",
-            "MNC"
-        ],
-        "mandatory_skills": [
-            "React",
-            "Node.js",
-            "JavaScript",
-            "SQL"
-        ],
-        "advanced_skills": [
-            "AWS",
-            "Docker",
-            "Nginx"
-        ],
-        "tools": [
-            "VS Code",
-            "GitHub"
-        ],
-        "avg_salary_range": "5-25 LPA"
+        "industry": ["Startup", "Product", "MNC"],
+        "mandatory_skills": ["React", "Node.js", "JavaScript", "TypeScript", "HTML5", "CSS3", "SQL", "MongoDB", "REST API"],
+        "advanced_skills": ["Next.js", "GraphQL", "Docker", "AWS", "Redis", "Webpack", "SSR"],
+        "tools": ["VS Code", "GitHub", "Postman", "Figma"],
+        "certifications": ["Meta Front-End Developer", "AWS Solutions Architect"],
+        "avg_salary_range": "5-25 LPA",
+        "interview_topics": ["React Lifecycle", "Node.js event loop", "Database Design", "API Design", "CSS Layout"]
+    },
+    "Backend Developer": {
+        "category": "IT",
+        "description": "Designs server-side logic, databases, and APIs that power web and mobile applications.",
+        "growth_score": 9.2,
+        "industry": ["FAANG", "Startup", "MNC", "Enterprise"],
+        "mandatory_skills": ["Python", "Java", "SQL", "PostgreSQL", "REST API", "Data Structures", "Algorithms", "Databases"],
+        "advanced_skills": ["System Design", "Microservices", "Kafka", "Redis", "Docker", "Kubernetes", "gRPC"],
+        "tools": ["Spring Boot", "FastAPI", "Django", "Node.js", "Postman"],
+        "certifications": ["AWS Certified Developer", "Oracle Java SE"],
+        "avg_salary_range": "6-30 LPA",
+        "interview_topics": ["Database Design", "API Security", "Caching", "Message Queues", "System Design"]
+    },
+    "Frontend Developer": {
+        "category": "IT",
+        "description": "Creates interactive, responsive user interfaces with modern JavaScript frameworks and CSS.",
+        "growth_score": 8.8,
+        "industry": ["Startup", "Product", "MNC", "Agency"],
+        "mandatory_skills": ["React", "JavaScript", "TypeScript", "HTML5", "CSS3", "Responsive Design", "Git"],
+        "advanced_skills": ["Next.js", "Vue.js", "Angular", "Tailwind CSS", "Webpack", "Testing", "PWA"],
+        "tools": ["VS Code", "Chrome DevTools", "Figma", "Storybook"],
+        "certifications": ["Meta Front-End Developer", "Google UX Design"],
+        "avg_salary_range": "4-20 LPA",
+        "interview_topics": ["DOM manipulation", "React hooks", "CSS Flexbox/Grid", "Browser rendering", "Performance"]
+    },
+    "Data Scientist": {
+        "category": "IT",
+        "description": "Extracts insights from complex data using statistical analysis, machine learning, and visualization.",
+        "growth_score": 9.5,
+        "industry": ["FAANG", "Product", "MNC", "Research"],
+        "mandatory_skills": ["Python", "R", "SQL", "Machine Learning", "Statistics", "Data Analysis", "Pandas", "NumPy"],
+        "advanced_skills": ["Deep Learning", "NLP", "Computer Vision", "MLOps", "Feature Engineering", "A/B Testing"],
+        "tools": ["Jupyter", "Scikit-learn", "TensorFlow", "PyTorch", "Tableau", "Power BI"],
+        "certifications": ["Google Data Analytics", "IBM Data Science", "AWS ML Specialty"],
+        "avg_salary_range": "8-35 LPA",
+        "interview_topics": ["Probability", "Statistics", "ML Algorithms", "Feature Engineering", "Model Evaluation"]
+    },
+    "Data Engineer": {
+        "category": "IT",
+        "description": "Builds and manages data pipelines, ETL processes, and data warehousing infrastructure.",
+        "growth_score": 9.3,
+        "industry": ["FAANG", "MNC", "Enterprise", "Fintech"],
+        "mandatory_skills": ["Python", "SQL", "ETL", "Data Warehousing", "Apache Spark", "Airflow", "AWS"],
+        "advanced_skills": ["Kafka", "Hadoop", "dbt", "Snowflake", "BigQuery", "Data Modeling", "Databricks"],
+        "tools": ["Apache Spark", "Airflow", "dbt", "Snowflake", "Redshift"],
+        "certifications": ["Google Cloud Data Engineer", "AWS Data Analytics Specialty", "Databricks Certified"],
+        "avg_salary_range": "8-30 LPA",
+        "interview_topics": ["ETL Design", "Data Modeling", "SQL optimization", "Distributed Computing", "Pipeline Architecture"]
+    },
+    "Data Analyst": {
+        "category": "IT",
+        "description": "Analyzes data to provide actionable business insights using statistical tools and visualization.",
+        "growth_score": 8.5,
+        "industry": ["MNC", "Enterprise", "Consulting", "Startup"],
+        "mandatory_skills": ["SQL", "Excel", "Python", "Data Visualization", "Statistics", "Business Intelligence"],
+        "advanced_skills": ["Tableau", "Power BI", "R", "A/B Testing", "Predictive Modeling"],
+        "tools": ["Tableau", "Power BI", "Google Analytics", "Looker", "Excel"],
+        "certifications": ["Google Data Analytics", "Microsoft Power BI"],
+        "avg_salary_range": "4-18 LPA",
+        "interview_topics": ["SQL queries", "Data Visualization", "Statistical Analysis", "Business Metrics", "Dashboard Design"]
+    },
+    "Machine Learning Engineer": {
+        "category": "IT",
+        "description": "Designs, builds, and deploys ML models and AI systems at production scale.",
+        "growth_score": 9.7,
+        "industry": ["FAANG", "Research", "Product", "AI Startup"],
+        "mandatory_skills": ["Python", "Machine Learning", "Deep Learning", "TensorFlow", "PyTorch", "MLOps", "Mathematics"],
+        "advanced_skills": ["NLP", "Computer Vision", "Reinforcement Learning", "GANs", "Transformers", "LLMs", "Model Optimization"],
+        "tools": ["MLflow", "Weights & Biases", "Docker", "Kubernetes", "AWS SageMaker"],
+        "certifications": ["Google ML Engineer", "AWS ML Specialty", "Deep Learning Specialization"],
+        "avg_salary_range": "10-45 LPA",
+        "interview_topics": ["ML System Design", "Math/Stats", "Deep Learning architectures", "Feature Engineering", "Model Deployment"]
+    },
+    "DevOps Engineer": {
+        "category": "IT",
+        "description": "Automates infrastructure, CI/CD pipelines, and ensures reliable software deployment and monitoring.",
+        "growth_score": 9.3,
+        "industry": ["FAANG", "MNC", "Enterprise", "Cloud"],
+        "mandatory_skills": ["Docker", "Kubernetes", "CI/CD", "Linux", "AWS", "Terraform", "Shell Scripting", "Git"],
+        "advanced_skills": ["Helm", "Prometheus", "Grafana", "Ansible", "ArgoCD", "Service Mesh", "GitOps"],
+        "tools": ["Jenkins", "GitLab CI", "GitHub Actions", "Terraform", "Prometheus", "Grafana", "ELK Stack"],
+        "certifications": ["AWS Solutions Architect", "CKA", "HashiCorp Terraform", "Docker Certified"],
+        "avg_salary_range": "8-35 LPA",
+        "interview_topics": ["CI/CD Design", "Container Orchestration", "Cloud Architecture", "Monitoring", "IaC"]
+    },
+    "Cloud Architect": {
+        "category": "IT",
+        "description": "Designs scalable, secure cloud infrastructure and leads cloud migration strategies.",
+        "growth_score": 9.4,
+        "industry": ["FAANG", "MNC", "Enterprise", "Consulting"],
+        "mandatory_skills": ["AWS", "Azure", "GCP", "Cloud Architecture", "Networking", "Security", "Terraform"],
+        "advanced_skills": ["Multi-cloud", "Serverless", "Cost Optimization", "CDN", "Edge Computing", "Zero Trust"],
+        "tools": ["AWS Console", "Azure Portal", "Terraform", "CloudFormation", "Pulumi"],
+        "certifications": ["AWS Solutions Architect Professional", "Azure Solutions Architect", "GCP Professional Architect"],
+        "avg_salary_range": "15-50 LPA",
+        "interview_topics": ["Cloud Design Patterns", "Security Architecture", "Cost Optimization", "Disaster Recovery", "Migration Strategy"]
+    },
+    "Mobile App Developer": {
+        "category": "IT",
+        "description": "Develops native or cross-platform mobile applications for iOS and Android platforms.",
+        "growth_score": 8.9,
+        "industry": ["Startup", "Product", "MNC", "Agency"],
+        "mandatory_skills": ["React Native", "Flutter", "Kotlin", "Swift", "REST API", "Mobile UI", "Git"],
+        "advanced_skills": ["iOS Development", "Android Jetpack", "Firebase", "State Management", "Push Notifications", "App Store Optimization"],
+        "tools": ["Android Studio", "Xcode", "VS Code", "Firebase", "Fastlane"],
+        "certifications": ["Google Associate Android Developer", "Meta React Native"],
+        "avg_salary_range": "5-25 LPA",
+        "interview_topics": ["Mobile Architecture", "State Management", "Performance Optimization", "Platform APIs", "UI/UX Principles"]
+    },
+    "Cybersecurity Analyst": {
+        "category": "IT",
+        "description": "Protects organizations from cyber threats through monitoring, analysis, and incident response.",
+        "growth_score": 9.6,
+        "industry": ["Enterprise", "Government", "Fintech", "Consulting"],
+        "mandatory_skills": ["Network Security", "SIEM", "Vulnerability Assessment", "Incident Response", "Linux", "Firewalls"],
+        "advanced_skills": ["Penetration Testing", "Threat Hunting", "Malware Analysis", "Cloud Security", "Zero Trust", "SOC Operations"],
+        "tools": ["Splunk", "Wireshark", "Metasploit", "Nessus", "Burp Suite", "OWASP ZAP"],
+        "certifications": ["CompTIA Security+", "CEH", "CISSP", "OSCP"],
+        "avg_salary_range": "6-30 LPA",
+        "interview_topics": ["Network Protocols", "Cryptography", "Incident Response", "OWASP Top 10", "Security Architecture"]
+    },
+    "UI/UX Designer": {
+        "category": "Design",
+        "description": "Designs intuitive, user-centered interfaces through research, wireframing, prototyping, and visual design.",
+        "growth_score": 8.7,
+        "industry": ["Product", "Startup", "Agency", "MNC"],
+        "mandatory_skills": ["Figma", "User Research", "Wireframing", "Prototyping", "Visual Design", "Design Systems"],
+        "advanced_skills": ["Interaction Design", "Motion Design", "Accessibility", "Design Thinking", "Usability Testing", "Information Architecture"],
+        "tools": ["Figma", "Adobe XD", "Sketch", "InVision", "Miro", "Maze"],
+        "certifications": ["Google UX Design", "Interaction Design Foundation"],
+        "avg_salary_range": "4-20 LPA",
+        "interview_topics": ["Design Process", "User Research Methods", "Usability Heuristics", "Portfolio Review", "Design Critique"]
+    },
+    "Product Manager": {
+        "category": "Business",
+        "description": "Defines product vision, strategy, and roadmap while coordinating cross-functional teams.",
+        "growth_score": 9.1,
+        "industry": ["Product", "Startup", "FAANG", "MNC"],
+        "mandatory_skills": ["Product Strategy", "User Research", "Data Analysis", "Roadmapping", "Agile", "Stakeholder Management"],
+        "advanced_skills": ["A/B Testing", "SQL", "Analytics", "Go-to-Market", "OKRs", "Competitive Analysis", "Pricing Strategy"],
+        "tools": ["Jira", "Confluence", "Mixpanel", "Amplitude", "Figma", "Google Analytics"],
+        "certifications": ["Pragmatic Institute PMC", "Scrum Product Owner"],
+        "avg_salary_range": "10-40 LPA",
+        "interview_topics": ["Product Sense", "Metrics", "Prioritization Frameworks", "Strategy", "Technical Understanding"]
+    },
+    "Business Analyst": {
+        "category": "Business",
+        "description": "Bridges business needs and technology solutions through requirements analysis and process improvement.",
+        "growth_score": 8.4,
+        "industry": ["Consulting", "MNC", "Enterprise", "Fintech"],
+        "mandatory_skills": ["Requirements Analysis", "SQL", "Excel", "Data Analysis", "Process Mapping", "Stakeholder Management"],
+        "advanced_skills": ["Power BI", "Tableau", "BPMN", "Six Sigma", "Agile", "UML"],
+        "tools": ["Jira", "Confluence", "Visio", "Power BI", "Excel"],
+        "certifications": ["CBAP", "PMI-PBA", "Six Sigma Green Belt"],
+        "avg_salary_range": "5-20 LPA",
+        "interview_topics": ["Requirements Gathering", "Use Cases", "Process Modeling", "Data Analysis", "Stakeholder Communication"]
+    },
+    "QA/Test Engineer": {
+        "category": "IT",
+        "description": "Ensures software quality through manual and automated testing, test planning, and defect management.",
+        "growth_score": 8.2,
+        "industry": ["MNC", "Enterprise", "Product", "Consulting"],
+        "mandatory_skills": ["Test Planning", "Test Automation", "Selenium", "API Testing", "SQL", "Bug Tracking", "Agile"],
+        "advanced_skills": ["Cypress", "Playwright", "Performance Testing", "Security Testing", "CI/CD Integration", "BDD/TDD"],
+        "tools": ["Selenium", "Cypress", "Jira", "Postman", "JMeter", "TestRail"],
+        "certifications": ["ISTQB", "Selenium Certified"],
+        "avg_salary_range": "4-18 LPA",
+        "interview_topics": ["Test Design Techniques", "Automation Frameworks", "API Testing", "Performance Testing", "Defect Lifecycle"]
+    },
+    "Site Reliability Engineer": {
+        "category": "IT",
+        "description": "Ensures system reliability, scalability, and performance through automation and observability.",
+        "growth_score": 9.4,
+        "industry": ["FAANG", "Product", "Cloud", "Fintech"],
+        "mandatory_skills": ["Linux", "Python", "Kubernetes", "Monitoring", "Incident Management", "SLO/SLI", "Automation"],
+        "advanced_skills": ["Chaos Engineering", "Capacity Planning", "On-call", "Distributed Systems", "Observability", "Toil Reduction"],
+        "tools": ["Prometheus", "Grafana", "PagerDuty", "Terraform", "Datadog", "ELK Stack"],
+        "certifications": ["CKA", "AWS DevOps Engineer", "Google SRE"],
+        "avg_salary_range": "10-40 LPA",
+        "interview_topics": ["System Design", "Incident Management", "Linux Internals", "Networking", "Reliability Principles"]
+    },
+    "Embedded Systems Engineer": {
+        "category": "Core",
+        "description": "Designs and programs firmware and hardware-software interfaces for embedded and IoT devices.",
+        "growth_score": 8.5,
+        "industry": ["Automobile", "IoT", "Manufacturing", "Defence"],
+        "mandatory_skills": ["C", "C++", "Embedded C", "RTOS", "Microcontrollers", "Digital Electronics", "PCB Design"],
+        "advanced_skills": ["ARM Architecture", "FPGA", "IoT Protocols", "Linux Kernel", "Device Drivers", "Bluetooth/WiFi"],
+        "tools": ["Keil", "Arduino", "Raspberry Pi", "Oscilloscope", "Logic Analyzer"],
+        "certifications": ["ARM Accredited Engineer", "Embedded Linux"],
+        "avg_salary_range": "4-18 LPA",
+        "interview_topics": ["Embedded C", "Interrupts", "RTOS concepts", "Memory Management", "Communication Protocols"]
+    },
+    "Mechanical Design Engineer": {
+        "category": "Core",
+        "description": "Designs and analyzes mechanical components and systems using CAD/CAE tools.",
+        "growth_score": 8.3,
+        "industry": ["Automobile", "Manufacturing", "Aerospace", "Heavy Engineering"],
+        "mandatory_skills": ["SolidWorks", "AutoCAD", "GD&T", "Engineering Drawing", "Material Science", "Thermodynamics"],
+        "advanced_skills": ["Finite Element Analysis", "ANSYS", "CFD", "3D Printing", "DFM/DFA"],
+        "tools": ["SolidWorks", "AutoCAD", "ANSYS", "CATIA", "Creo"],
+        "certifications": ["CSWE (SolidWorks Expert)", "CATIA Certified"],
+        "avg_salary_range": "4-15 LPA",
+        "interview_topics": ["Machine Design", "FEA", "GD&T", "Manufacturing Processes", "Strength of Materials"]
+    },
+    "Civil Engineer": {
+        "category": "Core",
+        "description": "Plans, designs, and oversees construction of infrastructure projects including buildings, roads, and bridges.",
+        "growth_score": 7.8,
+        "industry": ["Construction", "Government", "Infrastructure", "Consulting"],
+        "mandatory_skills": ["AutoCAD", "STAAD Pro", "Structural Analysis", "Concrete Design", "Project Management", "Surveying"],
+        "advanced_skills": ["BIM", "Revit", "ETABS", "Quantity Estimation", "Green Building"],
+        "tools": ["AutoCAD", "STAAD Pro", "Revit", "Primavera", "MS Project"],
+        "certifications": ["PMP", "LEED Green Associate"],
+        "avg_salary_range": "3-12 LPA",
+        "interview_topics": ["Structural Analysis", "RCC Design", "Construction Management", "Soil Mechanics", "Building Codes"]
+    },
+    "Electrical Engineer": {
+        "category": "Core",
+        "description": "Designs electrical systems, power distribution, and control systems for various applications.",
+        "growth_score": 8.0,
+        "industry": ["Power", "Manufacturing", "Automobile", "Electronics"],
+        "mandatory_skills": ["Circuit Design", "Power Systems", "Control Systems", "MATLAB", "PLC Programming", "Electrical Safety"],
+        "advanced_skills": ["SCADA", "Renewable Energy", "Power Electronics", "VFD", "Smart Grid"],
+        "tools": ["MATLAB", "Simulink", "PSpice", "AutoCAD Electrical", "ETAP"],
+        "certifications": ["PE License", "PLC Certified"],
+        "avg_salary_range": "3-15 LPA",
+        "interview_topics": ["Circuit Analysis", "Power Systems", "Control Theory", "Electrical Machines", "Protection Systems"]
+    },
+    "Blockchain Developer": {
+        "category": "IT",
+        "description": "Develops decentralized applications, smart contracts, and blockchain infrastructure.",
+        "growth_score": 8.8,
+        "industry": ["Fintech", "Crypto", "Startup", "Enterprise"],
+        "mandatory_skills": ["Solidity", "Ethereum", "Smart Contracts", "Web3.js", "Cryptography", "JavaScript"],
+        "advanced_skills": ["DeFi", "NFT", "Layer 2", "Rust", "Substrate", "Zero Knowledge Proofs"],
+        "tools": ["Hardhat", "Remix", "MetaMask", "Ganache", "Truffle"],
+        "certifications": ["Certified Blockchain Developer", "Ethereum Developer Certification"],
+        "avg_salary_range": "8-40 LPA",
+        "interview_topics": ["Consensus Mechanisms", "Smart Contract Security", "EVM", "Gas Optimization", "DApp Architecture"]
+    },
+    "AI/ML Researcher": {
+        "category": "IT",
+        "description": "Conducts cutting-edge research in artificial intelligence, publishing papers and developing novel algorithms.",
+        "growth_score": 9.8,
+        "industry": ["Research", "FAANG", "Academia", "AI Lab"],
+        "mandatory_skills": ["Python", "Deep Learning", "Mathematics", "Research Methodology", "PyTorch", "Linear Algebra", "Probability"],
+        "advanced_skills": ["Transformers", "LLMs", "Reinforcement Learning", "Generative AI", "Diffusion Models", "Neural Architecture Search"],
+        "tools": ["PyTorch", "JAX", "Weights & Biases", "LaTeX", "arXiv"],
+        "certifications": ["PhD preferred", "Deep Learning Specialization"],
+        "avg_salary_range": "15-60 LPA",
+        "interview_topics": ["Math fundamentals", "Research papers", "Novel architectures", "Experiment design", "Publication record"]
+    },
+    "Digital Marketing Manager": {
+        "category": "Marketing",
+        "description": "Plans and executes digital marketing campaigns across channels including SEO, SEM, social media, and content.",
+        "growth_score": 8.3,
+        "industry": ["Agency", "Startup", "E-commerce", "MNC"],
+        "mandatory_skills": ["SEO", "Google Ads", "Social Media Marketing", "Content Strategy", "Analytics", "Email Marketing"],
+        "advanced_skills": ["Marketing Automation", "CRO", "Programmatic Advertising", "Influencer Marketing", "Brand Strategy"],
+        "tools": ["Google Analytics", "HubSpot", "Semrush", "Hootsuite", "Mailchimp", "Google Ads"],
+        "certifications": ["Google Digital Marketing", "HubSpot Inbound Marketing", "Meta Blueprint"],
+        "avg_salary_range": "4-20 LPA",
+        "interview_topics": ["Campaign Strategy", "ROI Measurement", "SEO best practices", "Content Marketing", "Analytics"]
+    },
+    "Financial Analyst": {
+        "category": "Finance",
+        "description": "Analyzes financial data, builds models, and provides investment and business recommendations.",
+        "growth_score": 8.1,
+        "industry": ["Banking", "Consulting", "Investment", "Corporate"],
+        "mandatory_skills": ["Financial Modeling", "Excel", "Valuation", "Accounting", "Financial Statements", "Data Analysis"],
+        "advanced_skills": ["Python", "Bloomberg Terminal", "M&A", "Risk Analysis", "Derivatives", "Portfolio Management"],
+        "tools": ["Excel", "Bloomberg", "Capital IQ", "Python", "Tableau"],
+        "certifications": ["CFA", "CPA", "FRM"],
+        "avg_salary_range": "5-25 LPA",
+        "interview_topics": ["Valuation Methods", "Financial Statements", "DCF Modeling", "Market Analysis", "Accounting"]
     }
 }

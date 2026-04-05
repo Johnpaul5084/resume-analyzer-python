@@ -157,7 +157,7 @@ def validate_file_content(content: bytes, filename: str) -> None:
     """
     # Check for embedded script execution patterns (more specific to avoid skill false positives)
     suspicious_patterns = [
-        b'<script>', b'alert(', b'eval(', b'window.location', b'<?php', b'<%',
+        b'<script>', b'alert(', b'eval(', b'window.location',
     ]
     content_lower = content[:4096].lower()
 

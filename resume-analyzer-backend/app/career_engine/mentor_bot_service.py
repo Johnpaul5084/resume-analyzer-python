@@ -1,17 +1,18 @@
 """
 AI Mentor Bot Service
 =====================
-STRICT API SEPARATION:
-  - Match Intel, Roadmap, Skill Graph: OpenAI GPT-4o-mini ONLY
-  - NO Gemini here (Gemini is reserved for resume analysis only)
+Uses the Unified AI Provider (Gemini → OpenAI → Keyword Fallback)
 
-If OpenAI is unavailable, uses intelligent keyword-based fallback.
+Tab 1 — Match Intel : Deep market & profile analysis (AI-powered)
+Tab 2 — Roadmap     : 6-month career roadmap (AI-powered)
+Tab 3 — Skill Graph : Visual skill gap chart (matplotlib)
 """
 
 import os
 import json
 import re
 import logging
+import asyncio
 from pathlib import Path
 from dotenv import load_dotenv
 from typing import Dict, Any, List
@@ -20,50 +21,46 @@ load_dotenv(Path(__file__).resolve().parent.parent.parent / ".env", override=Tru
 
 logger = logging.getLogger(__name__)
 
-_PLACEHOLDER_OPENAI = "YOUR_OPENAI_KEY_HERE"
 
-
-def _oai_key() -> str:
-    from dotenv import dotenv_values
-    env_path = Path(__file__).resolve().parent.parent.parent / ".env"
-    return dotenv_values(env_path).get("OPENAI_API_KEY", "") or os.getenv("OPENAI_API_KEY", "")
-
-
-def _openai_active() -> bool:
-    k = _oai_key()
-    return bool(k and k != _PLACEHOLDER_OPENAI and k.startswith("sk-"))
-
-
-def _call_openai(prompt: str, system: str = "You are an expert AI career analyst.", max_tokens: int = 1200) -> str:
+def _call_ai_sync(prompt: str, system: str = "You are an expert AI career analyst.", max_tokens: int = 1200) -> str:
     """
-    Call OpenAI GPT-4o-mini ONLY — no Gemini fallback.
-    Returns the text response, or empty string on failure.
+    Call unified AIProvider synchronously.
+    Tries Gemini → OpenAI → returns empty string.
     """
-    if not _openai_active():
-        logger.info("OpenAI key not available — using fallback intelligence.")
-        return ""
-
     try:
-        from openai import OpenAI
-        client = OpenAI(api_key=_oai_key())
-        resp = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": system},
-                {"role": "user",   "content": prompt},
-            ],
-            max_tokens=max_tokens,
-            temperature=0.6,
-        )
-        return resp.choices[0].message.content or ""
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            import concurrent.futures
+            with concurrent.futures.ThreadPoolExecutor() as pool:
+                future = pool.submit(
+                    asyncio.run,
+                    _call_ai_async(prompt, system, max_tokens)
+                )
+                return future.result(timeout=60)
+        else:
+            return loop.run_until_complete(_call_ai_async(prompt, system, max_tokens))
+    except RuntimeError:
+        return asyncio.run(_call_ai_async(prompt, system, max_tokens))
     except Exception as e:
-        logger.error(f"OpenAI failed: {e}")
+        logger.error(f"AI call failed: {e}")
         return ""
+
+
+async def _call_ai_async(prompt: str, system: str, max_tokens: int) -> str:
+    """Async wrapper for AIProvider.generate."""
+    from app.core.ai_provider import AIProvider
+    return await AIProvider.generate(
+        prompt=prompt,
+        system_prompt=system,
+        max_tokens=max_tokens,
+        temperature=0.6,
+        timeout=45,
+    )
 
 
 class AIMentorBot:
     """
-    AI Career Mentor Bot — OpenAI ONLY
+    AI Career Mentor Bot — Unified AI Provider
     Tab 1 — Match Intel : Deep market & profile analysis
     Tab 2 — Roadmap     : 6-month career roadmap
     Tab 3 — Skill Graph : Visual skill gap chart (matplotlib)
@@ -88,10 +85,10 @@ class AIMentorBot:
                 "skill_graph": None,
             }
 
-        # ── Step 1: Match Intel (OpenAI) ──────────────────────────────────
+        # ── Step 1: Match Intel (AI-powered) ──────────────────────────────────
         intel = AIMentorBot._get_match_intel(resume_text, user_skills, target_role)
 
-        # ── Step 2: Roadmap (OpenAI) ──────────────────────────────────────
+        # ── Step 2: Roadmap (AI-powered) ──────────────────────────────────────
         from app.career_engine.roadmap_ai_generator import RoadmapAIGenerator
         roadmap = RoadmapAIGenerator.generate_dynamic_roadmap(
             role=intel.get("recommended_role", "Software Engineer"),
@@ -120,11 +117,11 @@ class AIMentorBot:
         }
 
     # ─────────────────────────────────────────────────────────────────────
-    # OpenAI-powered Match Intel (ONLY OpenAI)
+    # AI-powered Match Intel (Unified Provider)
     # ─────────────────────────────────────────────────────────────────────
     @staticmethod
     def _get_match_intel(resume_text: str, user_skills: List[str], target_role: str = None) -> Dict[str, Any]:
-        """Use OpenAI ONLY to deeply analyze the resume profile and generate market intel."""
+        """Use unified AIProvider to deeply analyze the resume profile and generate market intel."""
 
         skills_str = ", ".join(user_skills[:20]) if user_skills else "Not specified"
 
@@ -155,9 +152,9 @@ RULES:
 - salary_range must be realistic for India, 2025 market
 - mentor_advice must reference actual content from this resume"""
 
-        raw = _call_openai(
+        raw = _call_ai_sync(
             prompt=prompt,
-            system="You are an expert technical recruiter and career strategist. You provide accurate, data-driven career intelligence.",
+            system="You are an expert technical recruiter and career strategist. You provide accurate, data-driven career intelligence. Return only valid JSON.",
             max_tokens=700,
         )
 
@@ -167,12 +164,15 @@ RULES:
         try:
             raw = re.sub(r"^```(?:json)?\s*", "", raw.strip())
             raw = re.sub(r"\s*```$", "", raw)
-            data = json.loads(raw)
-            data["growth_score"] = float(data.get("growth_score", 7.0))
-            return data
+            match = re.search(r'\{.*\}', raw, re.DOTALL)
+            if match:
+                data = json.loads(match.group())
+                data["growth_score"] = float(data.get("growth_score", 7.0))
+                return data
         except Exception as e:
             logger.error(f"Intel JSON parse error: {e}\nRaw: {raw[:200]}")
-            return AIMentorBot._keyword_intel(resume_text, user_skills, target_role)
+
+        return AIMentorBot._keyword_intel(resume_text, user_skills, target_role)
 
     @staticmethod
     def _keyword_intel(resume_text: str, user_skills: List[str], target_role: str = None) -> Dict[str, Any]:
@@ -271,7 +271,6 @@ RULES:
 
         for dom in DOMAINS:
             score = sum(3 for k in dom["keywords"] if k in text_lower)
-            # Extra weight for skills
             score += sum(1 for k in dom["skills"] if k.lower() in text_lower)
             if score > highest_score:
                 highest_score = score

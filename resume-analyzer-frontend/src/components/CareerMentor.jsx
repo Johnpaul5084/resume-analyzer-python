@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { resumeAPI } from '../api';
 import MentorBot from './MentorBot';
-import { Bot, Target, FileText, ChevronRight } from 'lucide-react';
+import { Bot, Target, FileText, ChevronRight, Sparkles, TrendingUp, Brain } from 'lucide-react';
 
 export default function CareerMentor() {
     const [resumes, setResumes] = useState([]);
@@ -14,7 +14,6 @@ export default function CareerMentor() {
                 const res = await resumeAPI.getAll();
                 setResumes(res.data);
                 if (res.data.length > 0) {
-                    // Default to latest
                     setSelectedResumeId(res.data[0].id);
                 }
             } catch (err) {
@@ -29,7 +28,10 @@ export default function CareerMentor() {
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
-                <div className="animate-spin w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full"></div>
+                <div className="flex flex-col items-center gap-6">
+                    <div className="animate-spin w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full"></div>
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest animate-pulse">Initializing AI Mentor</p>
+                </div>
             </div>
         );
     }
@@ -42,31 +44,32 @@ export default function CareerMentor() {
                 </div>
                 <h2 className="text-4xl font-black text-white mb-4 tracking-tighter uppercase">AI Baseline Required</h2>
                 <p className="text-slate-500 text-sm font-medium leading-relaxed mb-10 uppercase tracking-widest">
-                    You must upload a resume before the AI can initialize your career mentor session.
+                    Upload a resume to initialize your AI career mentor session.
                 </p>
-                <a href="/upload" className="btn-primary px-12 py-5 text-xs tracking-[0.3em]">INITIATE UPLOAD</a>
+                <a href="/upload" className="btn-primary px-12 py-5 text-xs tracking-[0.3em]">UPLOAD RESUME</a>
             </div>
         );
     }
 
     return (
-        <div className="space-y-12">
+        <div className="space-y-8">
+            {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
-                    <h1 className="text-6xl font-black bg-gradient-to-r from-white via-indigo-200 to-slate-500 bg-clip-text text-transparent tracking-tighter mb-4">
+                    <h1 className="text-5xl font-black bg-gradient-to-r from-white via-indigo-200 to-slate-500 bg-clip-text text-transparent tracking-tighter mb-2">
                         Career Mentor
                     </h1>
-                    <p className="text-slate-400 font-medium tracking-wide max-w-2xl px-1 uppercase text-[10px] letter-spacing-[0.2em]">
-                        Autonomous Guidance & Neural Path Optimization
+                    <p className="text-slate-500 font-bold tracking-wide max-w-2xl px-1 uppercase text-[10px] tracking-widest">
+                        AI-Powered Career Guidance • Chat, Roadmaps & Skill Analysis
                     </p>
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Active Baseline</label>
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Active Resume</label>
                     <select
                         value={selectedResumeId || ''}
                         onChange={(e) => setSelectedResumeId(Number(e.target.value))}
-                        className="bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm text-white font-bold outline-none focus:ring-2 focus:ring-indigo-600/20 transition-all appearance-none cursor-pointer min-w-[280px]"
+                        className="bg-white/5 border border-white/10 rounded-xl px-5 py-3 text-sm text-white font-bold outline-none focus:ring-2 focus:ring-indigo-600/20 transition-all appearance-none cursor-pointer min-w-[260px]"
                     >
                         {resumes.map(r => (
                             <option key={r.id} value={r.id} className="bg-slate-900 text-white font-bold">{r.title}</option>
@@ -75,70 +78,76 @@ export default function CareerMentor() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                {/* Mentor Quick Actions */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                {/* Left Sidebar — AI Features */}
                 <div className="lg:col-span-1 space-y-6">
-                    <div className="glass-card p-8 border border-indigo-500/10 bg-gradient-to-br from-indigo-600/5 to-transparent rounded-[40px]">
-                        <div className="flex items-center gap-4 mb-8">
-                            <div className="bg-indigo-600 p-3 rounded-2xl shadow-lg">
-                                <Target size={24} className="text-white" />
+                    {/* Feature Cards */}
+                    <div className="glass-card p-6 border border-indigo-500/10 bg-gradient-to-br from-indigo-600/5 to-transparent">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="bg-indigo-600 p-2.5 rounded-xl shadow-lg">
+                                <Brain size={20} className="text-white" />
                             </div>
-                            <h3 className="text-sm font-black text-white uppercase tracking-widest">System Protocols</h3>
+                            <h3 className="text-xs font-black text-white uppercase tracking-widest">AI Features</h3>
                         </div>
-                        <ul className="space-y-4">
+                        <ul className="space-y-3">
                             {[
-                                "Quantifiable Impact Analysis",
-                                "Semantic JD Alignment",
-                                "Skill Surface Mapping",
-                                "MNC Standard Validation"
+                                { icon: <Bot size={14} />, label: "Multi-Turn Chat", desc: "Context-aware conversations" },
+                                { icon: <Target size={14} />, label: "Match Intel", desc: "Market & profile analysis" },
+                                { icon: <TrendingUp size={14} />, label: "AI Roadmap", desc: "Personalized career path" },
+                                { icon: <Sparkles size={14} />, label: "Skill Graph", desc: "Visual gap analysis" },
                             ].map((item, i) => (
-                                <li key={i} className="flex items-center gap-3 text-slate-400 text-xs font-bold py-3 px-4 rounded-xl hover:bg-white/5 transition-all group cursor-pointer border border-transparent hover:border-white/5">
-                                    <ChevronRight size={14} className="text-indigo-500 group-hover:translate-x-1 transition-transform" />
-                                    {item}
+                                <li key={i} className="flex items-start gap-3 text-slate-400 text-xs font-semibold py-2.5 px-3 rounded-lg hover:bg-white/5 transition-all group cursor-default border border-transparent hover:border-white/5">
+                                    <span className="text-indigo-500 mt-0.5">{item.icon}</span>
+                                    <div>
+                                        <p className="text-white text-[11px] font-black">{item.label}</p>
+                                        <p className="text-slate-600 text-[10px]">{item.desc}</p>
+                                    </div>
                                 </li>
                             ))}
                         </ul>
                     </div>
 
-                    <div className="bg-white/5 p-8 rounded-[40px] border border-white/5">
-                        <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-4">AI Advice</p>
-                        <p className="text-sm text-slate-400 font-medium leading-relaxed italic">
-                            "Quantum analysis recommends a bi-weekly sync of your skill surface to maintain alignment with high-growth market sectors in 2026."
+                    <div className="bg-gradient-to-br from-indigo-600/10 to-purple-600/5 p-6 rounded-2xl border border-indigo-500/10">
+                        <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-3">Powered By</p>
+                        <p className="text-sm text-white font-bold mb-1">Google Gemini AI</p>
+                        <p className="text-[10px] text-slate-500 font-medium leading-relaxed">
+                            Real AI responses — no hardcoded answers. Every chat, roadmap, and analysis is generated live using state-of-the-art AI.
                         </p>
+                    </div>
+
+                    <div className="bg-white/5 p-6 rounded-2xl border border-white/5">
+                        <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-3">Tips</p>
+                        <ul className="space-y-2 text-[11px] text-slate-400 font-medium">
+                            <li className="flex items-start gap-2"><ChevronRight size={10} className="text-emerald-500 mt-1 flex-shrink-0" /> Ask about specific roles or companies</li>
+                            <li className="flex items-start gap-2"><ChevronRight size={10} className="text-emerald-500 mt-1 flex-shrink-0" /> Request interview prep for FAANG</li>
+                            <li className="flex items-start gap-2"><ChevronRight size={10} className="text-emerald-500 mt-1 flex-shrink-0" /> Get project ideas for your stack</li>
+                            <li className="flex items-start gap-2"><ChevronRight size={10} className="text-emerald-500 mt-1 flex-shrink-0" /> Use Match Intel for market fit</li>
+                        </ul>
                     </div>
                 </div>
 
-                {/* Direct BOT Integration */}
-                <div className="lg:col-span-2 relative min-h-[600px] glass-card rounded-[40px] border border-white/5 overflow-hidden flex flex-col">
-                    <div className="absolute inset-0 bg-indigo-600/5 opacity-20 pointer-events-none"></div>
-                    {/* We re-use some of MentorBot's internal view logic here but adapted for page flow */}
-                    <div className="p-8 border-b border-white/5 flex items-center gap-5 bg-white/5">
-                        <div className="bg-indigo-600 p-3 rounded-2xl shadow-lg">
-                            <Bot size={28} className="text-white" />
+                {/* Main Area — Inline MentorBot */}
+                <div className="lg:col-span-3 glass-card rounded-2xl border border-white/5 overflow-hidden flex flex-col min-h-[650px]">
+                    <div className="p-5 border-b border-white/5 flex items-center gap-4 bg-white/5">
+                        <div className="bg-indigo-600 p-2.5 rounded-xl shadow-lg">
+                            <Bot size={22} className="text-white" />
                         </div>
                         <div>
-                            <h3 className="font-black text-xl text-white tracking-tight">AI NEURAL TERMINAL</h3>
-                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Active Baseline: {resumes.find(r => r.id === selectedResumeId)?.title}</p>
-                        </div>
-                    </div>
-                    {/* For now, we manually implement a simple chat UI, or we can refactor MentorBot to be a component that can be both Sidebar and Page Content */}
-                    <div className="flex-1 flex flex-col p-8 justify-center items-center text-center space-y-8">
-                        <div className="bg-white/5 p-10 rounded-[60px] border border-white/5 shadow-2xl max-w-md">
-                            <Bot size={64} className="text-indigo-400 mx-auto mb-8 animate-pulse" />
-                            <h4 className="text-3xl font-black text-white mb-4 tracking-tighter uppercase">Initialize Mentor</h4>
-                            <p className="text-slate-500 text-sm font-medium mb-10 leading-relaxed uppercase tracking-widest">
-                                The floating AI orb at the bottom right is your constant companion. Click it to initialize chat, roadmaps, and skill visualizations.
-                            </p>
-                            <div className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center animate-bounce shadow-[0_0_20px_rgba(79,70,229,0.5)] cursor-pointer">
-                                <ChevronRight size={24} className="text-white rotate-90" />
+                            <h3 className="font-black text-lg text-white tracking-tight">AI CAREER MENTOR</h3>
+                            <div className="flex items-center gap-2 mt-0.5">
+                                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
+                                    Active → {resumes.find(r => r.id === selectedResumeId)?.title}
+                                </span>
                             </div>
                         </div>
                     </div>
+                    {/* Inline MentorBot — full chat experience embedded on page */}
+                    <div className="flex-1 flex flex-col">
+                        {selectedResumeId && <MentorBot resumeId={selectedResumeId} inline={true} />}
+                    </div>
                 </div>
             </div>
-
-            {/* Inject the actual floating bot with the selected ID */}
-            {selectedResumeId && <MentorBot resumeId={selectedResumeId} />}
         </div>
     );
 }

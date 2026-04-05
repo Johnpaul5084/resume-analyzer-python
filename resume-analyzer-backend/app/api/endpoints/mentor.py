@@ -12,9 +12,14 @@ from app.career_engine.resume_strategy import ResumeStrategy
 
 router = APIRouter()
 
+class ChatMessage(BaseModel):
+    role: str  # "user" or "assistant"
+    content: str
+
 class ChatRequest(BaseModel):
     question: str
     resume_id: Optional[int] = None
+    chat_history: Optional[List[ChatMessage]] = None
 
 class MentorInsightRequest(BaseModel):
     resume_text: str
@@ -35,6 +40,7 @@ async def chat_with_mentor(
 ):
     """
     Direct Chat with AI Career Mentor.
+    Supports chat history for contextual conversations.
     Rate limit: 30 messages/minute per user — enough for a natural conversation.
     """
     from app.main import limiter
@@ -50,9 +56,15 @@ async def chat_with_mentor(
             if resume:
                 resume_content = resume.content_text
 
+        # Convert chat_history from Pydantic models to dicts
+        history = None
+        if chat_req.chat_history:
+            history = [{"role": m.role, "content": m.content} for m in chat_req.chat_history]
+
         response = await MentorService.get_advice(
             user_question=chat_req.question,
             resume_context=resume_content,
+            chat_history=history,
         )
         return {"reply": response}
 
@@ -65,6 +77,7 @@ async def get_mentor_insight(
 ):
     """
     Get deep AI insights (Roadmap, Fit Analysis, Skill Graph).
+    Uses unified AIProvider (Gemini → OpenAI → Keyword Fallback).
     """
     return AIMentorBot.analyze_career_path(
         request.resume_text, 
