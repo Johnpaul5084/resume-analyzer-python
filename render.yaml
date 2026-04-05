@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: ai-resume-analyzer-backend
+    env: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn -k uvicorn.workers.UvicornWorker app.main:app"
+    envVars:
+      - key: DATABASE_URL
+        value: sqlite:////app/data/app.db # Use Render persistent disk for sqlite or use Postgres
+      - key: PROJECT_NAME
+        value: "AI Resume Analyzer"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "1440"
+      - key: API_V1_STR
+        value: "/api/v1"
+      - key: GEMINI_API_KEY
+        sync: false # Set in Render Dashboard
+    disk:
+      name: sqlite-data
+      mountPath: /app/data
+      sizeGB: 1
